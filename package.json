@@ -1,0 +1,7 @@
+{
+  "name": "data-structs-and-algos",
+  "version": "1.0.0",
+  "main": "build/index.js",
+  "license": "MIT",
+  "private": true
+}
