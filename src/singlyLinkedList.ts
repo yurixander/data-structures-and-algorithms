@@ -1,5 +1,6 @@
 import { CallbackWithParam } from "./common"
 import { Option } from "./option"
+import { Util } from "./util"
 
 export class SinglyLinkedList<T> {
   constructor(public value: T, public next: Option<SinglyLinkedList<T>> = Option.none()) {
