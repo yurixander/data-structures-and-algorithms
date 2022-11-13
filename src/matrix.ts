@@ -1,16 +1,21 @@
+import { Either, Result } from "./either"
 import { Option } from "./option"
 import { Util } from "./util"
 
 export type MatrixForEachCallback<T, U = void> = (value: T, row: number, column: number) => U
 
 export class Matrix<T> {
+  static unit<T>(rows: number, columns: number, initializer?: T): Result<Matrix<T>> {
+    return Util.tryDo(() => new Matrix(rows, columns, initializer))
+  }
+
   private values: T[][]
   private rowPointer: number
   private columnPointer: number
   private size_: number
   private capacity_: number
 
-  constructor(public rows: number, public columns: number, initializer?: T) {
+  private constructor(public rows: number, public columns: number, initializer?: T) {
     if (rows < 1 || columns < 1)
       throw new Error("Matrix must be able to hold at least one element")
 
@@ -63,6 +68,8 @@ export class Matrix<T> {
   }
 
   fill(value: T, replace: boolean = false): this {
+    // TODO: Everything should be functional.
+
     this.forEach((_, row, column) => {
       if (!replace && this.values[row][column] !== undefined)
         return
@@ -110,17 +117,7 @@ export class Matrix<T> {
 
     for (const column of this.values)
       column.length = columns
+
+    // TODO: Need to resize inner columns.
   }
 }
-
-// Testing.
-// new Matrix<number>(2, 2, 0)
-//   .map(() => Math.random() * 5)
-//   .forEach((value, row, column) => console.log(`[${row}:${column}] => ${value}`))
-
-let matrix = new Matrix<number>(2, 2)
-
-matrix.push(1)
-matrix.push(2)
-matrix.push(3)
-matrix.display()

@@ -29,7 +29,7 @@ export class Option<T> {
   }
 
   unwrap(): T {
-    return this.unwrapOrFail("Attempted to unwrap value of null")
+    return this.unwrapOrFail("Attempted to unwrap none value")
   }
 
   unwrapOrFail(message: string): T {

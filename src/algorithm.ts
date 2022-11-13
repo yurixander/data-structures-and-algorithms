@@ -1,3 +1,4 @@
+import { Callback } from "./common"
 import { Option } from "./option"
 
 type Entry<T> = [T, number]
@@ -78,5 +79,14 @@ export namespace Algorithm {
     }
 
     return Option.none()
+  }
+
+  export function makeArray<T>(size: number, callback: Callback<T>): T[] {
+    let array = new Array<T>(size)
+
+    for (let i = 0; i < size; i++)
+      array[i] = callback()
+
+    return array
   }
 }

@@ -1,4 +1,4 @@
-import { BinaryTree, BinaryTreeBranch } from "./binaryTree"
+import { BinaryTree } from "./binaryTree"
 import { Option } from "./option"
 
 export class BinarySearchTree<T> extends BinaryTree<T> {
@@ -11,7 +11,7 @@ export class BinarySearchTree<T> extends BinaryTree<T> {
   }
 
   binaryInsert(node: BinarySearchTree<T>) {
-
+    // TODO: Implement.
   }
 
   binarySearchRecursive(value: T): Option<BinarySearchTree<T>> {
