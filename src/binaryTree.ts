@@ -22,6 +22,14 @@ export class BinaryTree<T> {
     //
   }
 
+  *[Symbol.iterator]() {
+    // OPTIMIZE: Collect as needed, recall using generator.
+    let nodes = this.collectIterative()
+
+    for (const node of nodes)
+      yield node
+  }
+
   tryInsert(position: BinaryTreeBranch, node: BinaryTree<T>): boolean {
     let branch = position === BinaryTreeBranch.Left ? this.left : this.right
 

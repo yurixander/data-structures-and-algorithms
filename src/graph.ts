@@ -22,6 +22,10 @@ export class Graph<T> {
     //
   }
 
+  *[Symbol.iterator]() {
+    // TODO: Implement.
+  }
+
   determineProperties(): Set<GraphProperty> {
     let properties = new Set<GraphProperty>()
     let neighborsSeen = new Set<Graph<T>>()

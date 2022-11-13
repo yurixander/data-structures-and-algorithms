@@ -22,15 +22,16 @@ export namespace Algorithm {
     return a < b
   }
 
+  // REVIEW: Any way to accept `Iterable<T>` instead of just arrays?
   export function filterByFrequency<T>(
-    array: T[],
+    iterable: T[],
     frequency: number,
     comparator: Comparator<number> = strictEqualityComparator
   ): Entry<T>[] {
     let frequencies = new Map<T, number>()
     let indexes = new Map<T, number>()
 
-    for (const [index, value] of array.entries()) {
+    for (const [index, value] of iterable.entries()) {
       if (!frequencies.has(value))
         frequencies.set(value, 1)
 
@@ -43,18 +44,18 @@ export namespace Algorithm {
       .map(([value]) => [value, indexes.get(value)!])
   }
 
-  export function filterDistinct<T>(array: T[]): Entry<T>[] {
-    return filterByFrequency(array, 1)
+  export function filterDistinct<T>(iterable: T[]): Entry<T>[] {
+    return filterByFrequency(iterable, 1)
   }
 
-  export function filterNonDistinct<T>(array: T[]): Entry<T>[] {
-    return filterByFrequency(array, 1, Algorithm.greaterThanComparator)
+  export function filterNonDistinct<T>(iterable: T[]): Entry<T>[] {
+    return filterByFrequency(iterable, 1, Algorithm.greaterThanComparator)
   }
 
-  export function containsOnlyUniqueElements<T>(array: T[]): boolean {
+  export function containsOnlyUniqueElements<T>(iterable: T[]): boolean {
     let seen = new Set<T>()
 
-    for (const value of array)
+    for (const value of iterable)
       if (seen.has(value))
         return false
       else
@@ -63,16 +64,16 @@ export namespace Algorithm {
     return true
   }
 
-  export function binarySearchIterative<T>(array: T[], value: T): Option<number> {
+  export function binarySearchIterative<T>(iterable: T[], value: T): Option<number> {
     let low = 0
-    let high = array.length - 1
+    let high = iterable.length - 1
 
     while (low !== high) {
       let middle = (low + high) / 2
 
-      if (array[middle] === value)
+      if (iterable[middle] === value)
         return Option.some(middle)
-      else if (array[middle] < value)
+      else if (iterable[middle] < value)
         low = middle + 1
       else
         high = middle - 1

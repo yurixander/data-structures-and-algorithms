@@ -39,4 +39,8 @@ export namespace Util {
       return Either.right(error as Error)
     }
   }
+
+  export function overrideDelete(): never {
+    throw new Error("This function has been deleted")
+  }
 }

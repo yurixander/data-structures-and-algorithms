@@ -5,6 +5,13 @@ export class Tree<T> {
     //
   }
 
+  *[Symbol.iterator]() {
+    let nodes = this.collectIterative()
+
+    for (const node of nodes)
+      yield node
+  }
+
   traverse(callback: CallbackWithParam<Tree<T>>): void {
     this.collectIterative().forEach(node => callback(node))
   }

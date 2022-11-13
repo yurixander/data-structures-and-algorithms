@@ -7,9 +7,12 @@ export class SinglyLinkedList<T> {
     //
   }
 
-  [Symbol.iterator](): Iterator<SinglyLinkedList<T>> {
-    // TODO: Optimize.
-    return this.collectIterative().values()
+  *[Symbol.iterator]() {
+    // OPTIMIZE: Collect as needed (recall it's a generator).
+    let nodes = this.collectIterative()
+
+    for (const node of nodes)
+      yield node
   }
 
   reverse(): void {

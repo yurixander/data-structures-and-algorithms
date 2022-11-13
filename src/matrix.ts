@@ -32,6 +32,10 @@ export class Matrix<T> {
       this.fill(initializer)
   }
 
+  *[Symbol.iterator]() {
+    // TODO: Implement.
+  }
+
   get size(): number {
     return this.size
   }
