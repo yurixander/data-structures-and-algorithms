@@ -82,6 +82,9 @@ export namespace Performance {
     errorMarginPercentage: number,
     actualTime: number
   ): RuntimeComplexity {
+    // Safe-guard against negative values.
+    approximateTime = Math.abs(approximateTime)
+
     // FIXME: Hard-coded?
     let constantTime = 3
 
@@ -92,7 +95,10 @@ export namespace Performance {
     let logarithmicTime: Util.Lazy<number> = () => Math.log(approximateTime)
     let squareRootTime: Util.Lazy<number> = () => Math.sqrt(approximateTime)
     let exponentialTime: Util.Lazy<number> = () => approximateTime ** 2
-    let factorialTime: Util.Lazy<number> = () => Math2.factorialRecursive(approximateTime)
+
+    // NOTE: Since the approximate time will always be positive, this
+    // should never fail. Therefore, we can unwrap safely.
+    let factorialTime: Util.Lazy<number> = () => Math2.factorialRecursive(approximateTime).left()
 
     if (isWithinErrorMargins(actualTime, linearTime, errorMarginPercentage))
       return RuntimeComplexity.Constant

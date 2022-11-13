@@ -120,4 +120,6 @@ export class Matrix<T> {
 
     // TODO: Need to resize inner columns.
   }
+
+  // performOperation()
 }

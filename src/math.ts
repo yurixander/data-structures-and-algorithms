@@ -1,19 +1,23 @@
-export namespace Math2 {
-  export function factorialRecursiveNonTail(number: number): number {
-    if (number < 0)
-      throw new Error("Factorial of negative numbers is undefined")
-    else if (number === 0)
-      return 1
+import { Either, Result } from "./either"
 
-    return number * factorialRecursiveNonTail(number - 1)
+export namespace Math2 {
+  export function factorialRecursiveNonTail(number: number): Result<number> {
+    if (number < 0)
+      return Either.right(new Error("Factorial of negative numbers is undefined"))
+    else if (number === 0)
+      return Either.left(1)
+
+    return factorialRecursiveNonTail(number - 1)
+      .mapLeft(result => number * result)
   }
 
-  export function factorialRecursive(number: number): number {
+  export function factorialRecursive(number: number): Result<number> {
     if (number < 0)
-      throw new Error("Factorial of negative numbers is undefined")
+      return Either.right(new Error("Factorial of negative numbers is undefined"))
 
     let product = 1
 
+    // BUG: Still overflowing the stack for some reason.
     let go = (number: number): void => {
       if (number === 0)
         return
@@ -25,12 +29,12 @@ export namespace Math2 {
 
     go(number)
 
-    return product
+    return Either.left(product)
   }
 
-  export function factorialIterative(number: number): number {
+  export function factorialIterative(number: number): Result<number> {
     if (number < 0)
-      throw new Error("Factorial of negative numbers is undefined")
+      return Either.right(new Error("Factorial of negative numbers is undefined"))
 
     let product = 1
 
@@ -39,6 +43,6 @@ export namespace Math2 {
       number--
     }
 
-    return product
+    return Either.left(product)
   }
 }
