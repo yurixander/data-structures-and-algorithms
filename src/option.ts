@@ -1,4 +1,4 @@
-import { Callback, CallbackWithParam } from "./common"
+import { Util } from "./util"
 
 export class Option<T> {
   static none<T>(): Option<T> {
@@ -14,6 +14,10 @@ export class Option<T> {
       return Option.none()
 
     return Option.some(result)
+  }
+
+  static map2<A, B, C>(aOpt: Option<A>, bOpt: Option<B>, thunk: (a: A, b: B) => C): Option<C> {
+    return aOpt.andThen(a => bOpt.map(b => thunk(a, b)))
   }
 
   constructor(public value: T | null) {
@@ -43,15 +47,15 @@ export class Option<T> {
     return this.value === null ? defaultValue : this.value
   }
 
-  unwrapOr(callback: Callback<T>): T {
+  unwrapOr(callback: Util.Thunk<T>): T {
     return this.value === null ? callback() : this.value
   }
 
-  map<U>(callback: CallbackWithParam<T, U>): Option<U> {
+  map<U>(callback: Util.ThunkWithParam<T, U>): Option<U> {
     return this.value === null ? Option.none() : Option.some(callback(this.value))
   }
 
-  then<U>(callback: CallbackWithParam<T, Option<U>>): Option<U> {
+  andThen<U>(callback: Util.ThunkWithParam<T, Option<U>>): Option<U> {
     // TODO: Can't we base/abstract this off `map`?
     return this.value === null ? Option.none() : callback(this.value)
   }

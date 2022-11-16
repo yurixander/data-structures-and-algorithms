@@ -1,5 +1,4 @@
-import { CallbackWithParam } from "./common"
-import { Option } from "./option"
+import { Util } from "./util"
 
 export type Result<T> = Either<T, Error>
 
@@ -34,14 +33,14 @@ export class Either<L, R> {
     return this.value as R
   }
 
-  mapLeft(callback: CallbackWithParam<L>): Either<L, R> {
+  mapLeft(callback: Util.ThunkWithParam<L>): Either<L, R> {
     if (this.isLeft)
       callback(this.left())
 
     return this
   }
 
-  mapRight(callback: CallbackWithParam<R>): Either<L, R> {
+  mapRight(callback: Util.ThunkWithParam<R>): Either<L, R> {
     if (this.isRight)
       callback(this.right())
 

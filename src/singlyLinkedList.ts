@@ -1,9 +1,11 @@
-import { CallbackWithParam } from "./common"
 import { Option } from "./option"
 import { Util } from "./util"
 
 export class SinglyLinkedList<T> {
-  constructor(public value: T, public next: Option<SinglyLinkedList<T>> = Option.none()) {
+  constructor(
+    public value: T,
+    public next: Option<SinglyLinkedList<T>> = Option.none()
+  ) {
     //
   }
 
@@ -27,11 +29,11 @@ export class SinglyLinkedList<T> {
     }
   }
 
-  traverse(callback: CallbackWithParam<SinglyLinkedList<T>>): void {
+  traverse(callback: Util.ThunkWithParam<SinglyLinkedList<T>>): void {
     this.collectIterative().forEach(node => callback(node))
   }
 
-  find(predicate: CallbackWithParam<SinglyLinkedList<T>, boolean>): Option<SinglyLinkedList<T>> {
+  find(predicate: Util.ThunkWithParam<SinglyLinkedList<T>, boolean>): Option<SinglyLinkedList<T>> {
     let list = this.collectIterative()
 
     for (let node of list)
@@ -41,7 +43,7 @@ export class SinglyLinkedList<T> {
     return Option.none()
   }
 
-  filter(predicate: CallbackWithParam<SinglyLinkedList<T>, boolean>): SinglyLinkedList<T>[] {
+  filter(predicate: Util.ThunkWithParam<SinglyLinkedList<T>, boolean>): SinglyLinkedList<T>[] {
     return this.collectIterative().filter(node => predicate(node))
   }
 
@@ -107,5 +109,3 @@ export class SinglyLinkedList<T> {
     return new SinglyLinkedList(this.value, this.next)
   }
 }
-
-let node = new SinglyLinkedList(5)

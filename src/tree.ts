@@ -1,4 +1,4 @@
-import { CallbackWithParam } from "./common"
+import { Util } from "./util"
 
 export class Tree<T> {
   constructor(public value: T, public children: Tree<T>[] = []) {
@@ -12,7 +12,7 @@ export class Tree<T> {
       yield node
   }
 
-  traverse(callback: CallbackWithParam<Tree<T>>): void {
+  traverse(callback: Util.ThunkWithParam<Tree<T>>): void {
     this.collectIterative().forEach(node => callback(node))
   }
 

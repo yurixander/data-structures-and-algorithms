@@ -1,8 +1,13 @@
-import { Callback } from "./common"
 import { Either, Result } from "./either"
 
 export namespace Util {
-  export type Lazy<T> = Callback<T>
+  export type Thunk<T = void> = () => T
+
+  export type ThunkWithParam<T, U = void> = (_: T) => U
+
+  // export interface Ordered {
+  //   lessThan()
+  // }
 
   export function validateIndex(index: number, length: number): boolean {
     return Number.isInteger(index)
@@ -26,12 +31,12 @@ export namespace Util {
     return { ...defaults, ...partialOptions }
   }
 
-  export function repeat(times: number, thunk: Callback): void {
+  export function repeat(times: number, thunk: Thunk): void {
     for (let i = 0; i < times; i++)
       thunk()
   }
 
-  export function tryDo<T>(thunk: Callback<T>): Result<T> {
+  export function tryDo<T>(thunk: Thunk<T>): Result<T> {
     try {
       return Either.left(thunk())
     }
@@ -42,5 +47,9 @@ export namespace Util {
 
   export function overrideDelete(): never {
     throw new Error("This function has been deleted")
+  }
+
+  export function unimplemented(): never {
+    throw new Error("Not yet implemented")
   }
 }

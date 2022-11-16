@@ -1,4 +1,4 @@
-import { CallbackWithParam } from "./common"
+import { Util } from "./util"
 
 export enum GraphProperty {
   Cyclic,
@@ -40,7 +40,7 @@ export class Graph<T> {
     return properties
   }
 
-  private traverseDepthFirst(callback: CallbackWithParam<Graph<T>>): void {
+  private traverseDepthFirst(callback: Util.ThunkWithParam<Graph<T>>): void {
     let queue: Graph<T>[] = [this]
     let nodesVisited = new Set<Graph<T>>()
 
@@ -56,7 +56,7 @@ export class Graph<T> {
   }
 
   traverse(
-    callback: CallbackWithParam<Graph<T>>,
+    callback: Util.ThunkWithParam<Graph<T>>,
     algorithm: GraphTraversalAlgorithm = GraphTraversalAlgorithm.DepthFirstSearch
   ): void {
     switch (algorithm) {

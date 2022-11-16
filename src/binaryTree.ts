@@ -1,5 +1,5 @@
-import { CallbackWithParam } from "./common"
 import { Option } from "./option"
+import { Util } from "./util"
 
 export enum TreeTraversalOrder {
   DepthFirstSearch,
@@ -41,7 +41,7 @@ export class BinaryTree<T> {
     return true
   }
 
-  traverse(callback: CallbackWithParam<BinaryTree<T>>): void {
+  traverse(callback: Util.ThunkWithParam<BinaryTree<T>>): void {
     this.collectIterative().forEach(node => callback(node))
   }
 

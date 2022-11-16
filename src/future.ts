@@ -1,4 +1,4 @@
-import { Callback } from "./common"
+import { Util } from "./util"
 
 export enum FutureState {
   Unexecuted,
@@ -8,13 +8,13 @@ export enum FutureState {
 }
 
 export class Future<T> {
-  static unit<T>(thunk: Callback<T>): Future<T> {
+  static unit<T>(thunk: Util.Thunk<T>): Future<T> {
     return new Future(thunk)
   }
 
   private state_: FutureState
 
-  constructor(public thunk: Callback<T>) {
+  constructor(public thunk: Util.Thunk<T>) {
     this.state_ = FutureState.Unexecuted
   }
 

@@ -1,9 +1,21 @@
-import { Callback } from "./common"
 import { Option } from "./option"
+import { Util } from "./util"
 
 type Entry<T> = [T, number]
 
-type Comparator<T> = (a: T, b: T) => boolean
+export enum ComparisonOperation {
+  LessThan,
+  LessThanOrEqualTo,
+  EqualTo,
+  GreaterThan,
+  GreaterThanOrEqualTo,
+  NotEqualTo
+}
+
+export type Comparator<T> =
+  (a: T, b: T, operation: ComparisonOperation) => boolean
+
+type PredefinedComparator<T> = (a: T, b: T) => boolean
 
 export namespace Algorithm {
   export function strictEqualityComparator<T>(a: T, b: T): boolean {
@@ -26,7 +38,7 @@ export namespace Algorithm {
   export function filterByFrequency<T>(
     iterable: T[],
     frequency: number,
-    comparator: Comparator<number> = strictEqualityComparator
+    comparator: PredefinedComparator<number> = strictEqualityComparator
   ): Entry<T>[] {
     let frequencies = new Map<T, number>()
     let indexes = new Map<T, number>()
@@ -82,7 +94,7 @@ export namespace Algorithm {
     return Option.none()
   }
 
-  export function makeArray<T>(size: number, callback: Callback<T>): T[] {
+  export function makeArray<T>(size: number, callback: Util.Thunk<T>): T[] {
     let array = new Array<T>(size)
 
     for (let i = 0; i < size; i++)

@@ -1,4 +1,3 @@
-import { Callback } from "./common"
 import { Math2 } from "./math"
 import { Util } from "./util"
 
@@ -58,7 +57,7 @@ export namespace Performance {
     Infinity
   }
 
-  export function measure(thunk: Callback): number {
+  export function measure(thunk: Util.Thunk): number {
     let start = performance.now()
 
     thunk()
@@ -92,13 +91,13 @@ export namespace Performance {
       return RuntimeComplexity.Constant
 
     let linearTime = approximateTime
-    let logarithmicTime: Util.Lazy<number> = () => Math.log(approximateTime)
-    let squareRootTime: Util.Lazy<number> = () => Math.sqrt(approximateTime)
-    let exponentialTime: Util.Lazy<number> = () => approximateTime ** 2
+    let logarithmicTime: Util.Thunk<number> = () => Math.log(approximateTime)
+    let squareRootTime: Util.Thunk<number> = () => Math.sqrt(approximateTime)
+    let exponentialTime: Util.Thunk<number> = () => approximateTime ** 2
 
     // NOTE: Since the approximate time will always be positive, this
     // should never fail. Therefore, we can unwrap safely.
-    let factorialTime: Util.Lazy<number> = () => Math2.factorialRecursive(approximateTime).left()
+    let factorialTime: Util.Thunk<number> = () => Math2.factorialRecursive(approximateTime).left()
 
     if (isWithinErrorMargins(actualTime, linearTime, errorMarginPercentage))
       return RuntimeComplexity.Constant
@@ -118,7 +117,7 @@ export namespace Performance {
    * Approximate the runtime complexity of a given operation.
    */
   export function measureRuntimeComplexity(
-    thunk: Callback,
+    thunk: Util.Thunk,
     n: number,
     partialOptions: Partial<RuntimeComplexityMeasurementOptions> = defaultRuntimeComplexityMeasurementOptions
   ): RuntimeComplexityTrio {
