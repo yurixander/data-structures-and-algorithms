@@ -3,5 +3,12 @@
   "version": "1.0.0",
   "main": "build/index.js",
   "license": "MIT",
-  "private": true
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "start": "yarn build && node build/index.js"
+  },
+  "devDependencies": {
+    "typescript": "^4.9.3"
+  }
 }

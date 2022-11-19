@@ -1,5 +1,7 @@
 import { Util } from "./util"
 
+type Falsy = undefined | null | false
+
 export class Option<T> {
   static none<T>(): Option<T> {
     return null as any
@@ -9,15 +11,12 @@ export class Option<T> {
     return new Option(value)
   }
 
-  static try<T>(result: T | undefined): Option<T> {
-    if (result === undefined)
-      return Option.none()
-
-    return Option.some(result)
+  static try<T>(result: T | Falsy): Option<T> {
+    return !result ? Option.none() : Option.some(result)
   }
 
   static map2<A, B, C>(aOpt: Option<A>, bOpt: Option<B>, thunk: (a: A, b: B) => C): Option<C> {
-    return aOpt.andThen(a => bOpt.map(b => thunk(a, b)))
+    return aOpt.bind(a => bOpt.map(b => thunk(a, b)))
   }
 
   constructor(public value: T | null) {
@@ -55,7 +54,7 @@ export class Option<T> {
     return this.value === null ? Option.none() : Option.some(callback(this.value))
   }
 
-  andThen<U>(callback: Util.ThunkWithParam<T, Option<U>>): Option<U> {
+  bind<U>(callback: Util.ThunkWithParam<T, Option<U>>): Option<U> {
     // TODO: Can't we base/abstract this off `map`?
     return this.value === null ? Option.none() : callback(this.value)
   }

@@ -11,6 +11,15 @@ export class Either<L, R> {
     return new Either<T, U>(value, false)
   }
 
+  static try<T>(thunk: Util.Thunk<T | never>): Result<T> {
+    try {
+      return Either.left(thunk())
+    }
+    catch (error) {
+      return Either.right(error as Error)
+    }
+  }
+
   private constructor(public value: L | R, public readonly isLeft: boolean) {
     //
   }
@@ -45,5 +54,13 @@ export class Either<L, R> {
       callback(this.right())
 
     return this
+  }
+
+  orElseLeft(value: L): Either<L, R> {
+    return Either.left(value)
+  }
+
+  orElseRight(value: R): Either<L, R> {
+    return Either.right(value)
   }
 }

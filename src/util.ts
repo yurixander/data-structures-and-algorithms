@@ -1,5 +1,3 @@
-import { Either, Result } from "./either"
-
 export namespace Util {
   export type Thunk<T = void> = () => T
 
@@ -34,15 +32,6 @@ export namespace Util {
   export function repeat(times: number, thunk: Thunk): void {
     for (let i = 0; i < times; i++)
       thunk()
-  }
-
-  export function tryDo<T>(thunk: Thunk<T>): Result<T> {
-    try {
-      return Either.left(thunk())
-    }
-    catch (error) {
-      return Either.right(error as Error)
-    }
   }
 
   export function overrideDelete(): never {

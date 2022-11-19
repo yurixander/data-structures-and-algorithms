@@ -1,4 +1,4 @@
-import { Comparator } from "./algorithm";
+import { Comparator } from "./algorithm"
 
 export class MinHeap<T> {
   constructor(

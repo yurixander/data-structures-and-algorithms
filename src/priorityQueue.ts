@@ -1,11 +1,26 @@
-import { MaxHeap, numberInverter } from "./maxHeap";
+import { MaxHeap } from "./maxHeap"
+import { Option } from "./option"
 
-export class PriorityQueue<T> {
-  private maxHeap: MaxHeap<T>
+type PriorityQueueHeapValue<T> = [T, number]
+
+export class PriorityQueue<TValue> {
+  private maxHeap: MaxHeap<PriorityQueueHeapValue<TValue>>
 
   constructor() {
-    // this.maxHeap = new MaxHeap()
-    // TODO: Implement.
+    // TODO: Fix comparator.
+    this.maxHeap = new MaxHeap(value => [value[0], -value[1]], (a, b) => a[1] === b[1])
+
+    // TODO: Finish implementing.
     throw new Error("Not yet implemented")
+  }
+
+  enqueue(value: TValue, priority: number) {
+    this.maxHeap.insert([value, priority])
+  }
+
+  dequeue(): Option<TValue> {
+    return Option.some(this.maxHeap.get()[0])
+
+    // TODO: Perform sift operation.
   }
 }

@@ -31,4 +31,6 @@ export class BinarySearchTree<T> extends BinaryTree<T> {
 
     return go(Option.some(this))
   }
+  
+  // TODO: Missing re-balancing logic.
 }

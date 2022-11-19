@@ -6,7 +6,7 @@ export type MatrixForEachCallback<T, U = void> = (value: T, row: number, column:
 
 export class Matrix<T> {
   static unit<T>(rows: number, columns: number, initializer?: T): Result<Matrix<T>> {
-    return Util.tryDo(() => new Matrix(rows, columns, initializer))
+    return Either.try(() => new Matrix(rows, columns, initializer))
   }
 
   private values: T[][]
@@ -37,11 +37,11 @@ export class Matrix<T> {
   }
 
   get size(): number {
-    return this.size
+    return this.size_
   }
 
   get capacity(): number {
-    return this.capacity
+    return this.capacity_
   }
 
   set(row: number, column: number, value: T): boolean {
