@@ -31,7 +31,7 @@ export class BinaryTree<T> {
   }
 
   tryInsert(position: BinaryTreeBranch, node: BinaryTree<T>): boolean {
-    let branch = position === BinaryTreeBranch.Left ? this.left : this.right
+    const branch = position === BinaryTreeBranch.Left ? this.left : this.right
 
     if (branch.isSome())
       return false
@@ -54,7 +54,7 @@ export class BinaryTree<T> {
     let nodes: BinaryTree<T>[] = []
 
     while (queue.length > 0) {
-      let node = queue.pop()!
+      const node = queue.pop()!
 
       nodes.push(node)
 
@@ -71,7 +71,7 @@ export class BinaryTree<T> {
   collectRecursive(): BinaryTree<T>[] {
     let result: BinaryTree<T>[] = []
 
-    let go = (node: BinaryTree<T>): void => {
+    const go = (node: BinaryTree<T>): void => {
       result.push(node)
 
       if (node.left.isSome())

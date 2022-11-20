@@ -22,11 +22,10 @@ export class Interval {
     if (!this.overlapsWith(other))
       return Option.none()
 
-    let from = Math.min(this.from, other.from)
-    let to = Math.max(this.to, other.to)
-    let result = new Interval(from, to)
+    const from = Math.min(this.from, other.from)
+    const to = Math.max(this.to, other.to)
 
-    return Option.some(result)
+    return Option.some(new Interval(from, to))
   }
 
   difference(other: Interval): Option<Interval> {

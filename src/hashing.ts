@@ -6,8 +6,8 @@ export namespace Hashing {
   }
 
   export function multiplicationMethod(k: number, m: number): number {
-    let A = Math.random()
-    let aTimesK = A * k
+    const A = Math.random()
+    const aTimesK = A * k
 
     // TODO: Ensure number is always a fraction.
     let aTimesKFractionPart = aTimesK.toString().split(".")[1]
@@ -16,7 +16,7 @@ export namespace Hashing {
   }
 
   export function midSquareMethod(k: number, r: number): number {
-    let kSquared = k ** 2
+    const kSquared = k ** 2
 
     // TODO: Continue implementation.
     Util.unimplemented()

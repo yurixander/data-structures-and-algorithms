@@ -21,11 +21,12 @@ import { Option } from "./option"
 // console.log(runtimeComplexities)
 
 console.log(Either.try(() => {
-  let a: any = null
+  const a: any = null
 
   a.something.far
 }))
 
 console.log(Either.left(1))
 
-console.log("Here's the fib. list:", Stream.fibonacci.take(14).toArray())
+console.log("Here's the fib. list:", Stream.fibonacci.takeImperative(14))
+console.log("\n\nHere's a few random numbers:", Stream.randomImperative.takeImperative(10))

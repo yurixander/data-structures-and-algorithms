@@ -15,11 +15,11 @@ export class BinarySearchTree<T> extends BinaryTree<T> {
   }
 
   binarySearchRecursive(value: T): Option<BinarySearchTree<T>> {
-    let go = (nodeOpt: Option<BinarySearchTree<T>>): Option<BinarySearchTree<T>> => {
+    const go = (nodeOpt: Option<BinarySearchTree<T>>): Option<BinarySearchTree<T>> => {
       if (nodeOpt.isNone())
         return Option.none()
 
-      let node = nodeOpt.unwrap()
+      const node = nodeOpt.unwrap()
 
       if (node.value === value)
         return nodeOpt
@@ -31,6 +31,6 @@ export class BinarySearchTree<T> extends BinaryTree<T> {
 
     return go(Option.some(this))
   }
-  
+
   // TODO: Missing re-balancing logic.
 }

@@ -81,7 +81,7 @@ export namespace Algorithm {
     let high = iterable.length - 1
 
     while (low !== high) {
-      let middle = (low + high) / 2
+      const middle = (low + high) / 2
 
       if (iterable[middle] === value)
         return Option.some(middle)

@@ -18,7 +18,7 @@ export namespace Math2 {
     let product = 1
 
     // BUG: Still overflowing the stack for some reason.
-    let go = (number: number): void => {
+    const go = (number: number): void => {
       if (number === 0)
         return
 

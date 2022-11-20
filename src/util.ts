@@ -1,3 +1,5 @@
+import { Option } from "./option"
+
 export namespace Util {
   export type Thunk<T = void> = () => T
 
@@ -40,5 +42,14 @@ export namespace Util {
 
   export function unimplemented(): never {
     throw new Error("Not yet implemented")
+  }
+
+  export function zip<A, B>(a: A[], b: B[]): Iterable<[Option<A>, Option<B>]> {
+    let result = new Array(Math.max(a.length, b.length))
+
+    for (let i = 0; i < result.length; i++)
+      result[i] = [Option.try(a[i]), Option.try(b[i])]
+
+    return result
   }
 }

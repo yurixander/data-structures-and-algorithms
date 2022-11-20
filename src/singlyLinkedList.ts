@@ -36,7 +36,7 @@ export class SinglyLinkedList<T> {
   find(predicate: Util.ThunkWithParam<SinglyLinkedList<T>, boolean>): Option<SinglyLinkedList<T>> {
     let list = this.collectIterative()
 
-    for (let node of list)
+    for (const node of list)
       if (predicate(node))
         return Option.some(node)
 
@@ -58,13 +58,13 @@ export class SinglyLinkedList<T> {
   }
 
   findMiddle(): SinglyLinkedList<T> {
-    let list = this.collectIterative()
+    const list = this.collectIterative()
 
     return list[Math.floor(list.length / 2)]
   }
 
   deleteNthNode(position: number): boolean {
-    let list = this.collectIterative()
+    const list = this.collectIterative()
 
     if (!Util.validateIndex(position, list.length))
       return false

@@ -25,7 +25,7 @@ export class Tree<T> {
     let nodes: Tree<T>[] = []
 
     while (queue.length > 0) {
-      let node = queue.pop()!
+      const node = queue.pop()!
 
       nodes.push(node)
       queue.push(...node.children)
@@ -37,7 +37,7 @@ export class Tree<T> {
   collectRecursive(): Tree<T>[] {
     let result: Tree<T>[] = []
 
-    let go = (node: Tree<T>) => {
+    const go = (node: Tree<T>) => {
       result.push(node)
 
       for (const child of node.children)
