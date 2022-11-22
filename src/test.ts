@@ -40,26 +40,26 @@ export class TestBuilder<T> {
     this.chain = []
   }
 
-  private compareElements<U>(arrayA: U[], arrayB: U[]): Result<this> {
+  private compareElements<U>(arrayA: U[], arrayB: U[]): MaybeOk {
     for (const [a, b] of Util.zip(arrayA, arrayB))
       // TODO: Add an equality helper for deep comparisons.
       if (a.isNone() || b.isNone() || a.unwrap() !== b.unwrap())
         // TODO: Need a more descriptive message. Perhaps compare diffs?
         return Either.right(new Error(`Element differs: ${a.unwrap()} vs. ${b.unwrap()}`))
 
-    return Either.left(this)
+    return Either.ok()
   }
 
-  private compareWithArray(array: T[]): Result<this> {
+  private compareWithArray<U extends Array<any>>(array: U): MaybeOk {
     if (typeof this.value !== "object" || this.value === null || !Array.isArray(this.value))
       return Either.right(new Error("Value is not an array"))
     else if (this.value.length !== array.length)
-      return Either.right(new Error("Array lengths differ"))
+      return Either.right(new Error(`Array lengths differ: ${this.value.length} vs. ${array.length}`))
 
     return this.compareElements(this.value, array)
   }
 
-  private compareWithObject<U extends object>(object: U): Result<this> {
+  private compareWithObject<U extends object>(object: U): MaybeOk {
     if (typeof this.value !== "object" || this.value === null)
       return Either.right(new Error("Value is not an object"))
 
@@ -73,7 +73,12 @@ export class TestBuilder<T> {
   }
 
   toEqual(other: T): this {
-    return this.assert(_ => this.value === other, new Error("Values are not equal"))
+    return this.to(_ => {
+      if (Array.isArray(this.value))
+        return this.compareWithArray(other as any)
+
+      return Either.if(this.value === other, new Error("Values are not equal"))
+    })
   }
 
   toBeTruthy(): this {
@@ -82,10 +87,6 @@ export class TestBuilder<T> {
 
   toBeFalsy(): this {
     return this.assert(_ => !this.value, new Error("Value is not falsy"))
-  }
-
-  assert(condition: Util.ThunkWithParam<this, boolean>, error: Error = new Error("Unmet condition")): this {
-    return this.to(() => Either.ifTrueThenOk(condition(this), error))
   }
 
   toBeOfType(type: Type): this {
@@ -99,12 +100,25 @@ export class TestBuilder<T> {
   // TODO: Not so simple! The value is evaluated before this is called.
   toThrow(): this {
     return this.to(_ =>
-      Either.ifTrueThenOk(this.value instanceof Function, new Error("Value is not a function; it will never throw"))
+      Either.if(this.value instanceof Function, new Error("Value is not a function; it will never throw"))
     )
   }
 
   toBeNull(): this {
     return this.assert(_ => this.value === null, new Error("Value is not null"))
+  }
+
+  toBeArrayOfSize(size: number): this {
+    return this.to(_ => {
+      if (!Array.isArray(this.value))
+        return Either.right(new Error("Value is not an array"))
+
+      return Either.if(this.value.length === size, new Error("Array size differs from expected size"))
+    })
+  }
+
+  assert(condition: Util.ThunkWithParam<this, boolean>, error: Error = new Error("Unmet condition")): this {
+    return this.to(() => Either.if(condition(this), error))
   }
 
   to(functor: TestFunctor<T>): this {
@@ -163,14 +177,19 @@ export class TestSuite {
       }
 
       const runtime = Math.floor(performance.now() - startTime)
+      const runtimeString = `${runtime}ms`
+
+      const runtimeColoredString =
+        // REVISE: Hard-coded limit. Perhaps taking it in as a default option would be better.
+        runtime >= 100 ? chalk.red(runtimeString) : runtimeString
 
       if (result.isRight) {
         // CONSIDER: Combine log messages.
-        console.log(`  ${chalk.red("✗".trim())} ${test[0]} (${runtime}ms)`)
+        console.log(`  ${chalk.red("✗".trim())} ${test[0]} (${runtimeColoredString})`)
         failingTests.push([test[0], result.right().message])
       }
       else
-        console.log(chalk.gray(`  ${chalk.green("✓")} ${test[0]} (${runtime}ms)`))
+        console.log(chalk.gray(`  ${chalk.green("✓")} ${test[0]} (${runtimeColoredString})`))
     }
 
     // Add a newline to separate output.

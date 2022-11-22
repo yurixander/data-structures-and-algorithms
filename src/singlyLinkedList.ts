@@ -17,16 +17,24 @@ export class SinglyLinkedList<T> {
       yield node
   }
 
-  reverseImperative(): void {
+  reverseImperative(): SinglyLinkedList<T> {
+    // REVISE: Cleanup returning of the new head.
+
     let bufferOpt = Option.some<SinglyLinkedList<T>>(this)
     let previous = Option.none<SinglyLinkedList<T>>()
+    let newHead: SinglyLinkedList<T>
 
     while (bufferOpt.isSome()) {
       let buffer = bufferOpt.unwrap()
-      let next = buffer.next;
+      const next = buffer.next;
 
       [buffer.next, bufferOpt] = [previous, next]
+
+      if (bufferOpt.isNone())
+        newHead = buffer
     }
+
+    return newHead!
   }
 
   traverse(callback: Util.ThunkWithParam<SinglyLinkedList<T>>): void {

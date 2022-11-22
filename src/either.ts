@@ -9,7 +9,7 @@ export class Either<L, R> {
     return Either.left(undefined)
   }
 
-  static ifTrueThenOk(condition: boolean, error: Error): MaybeOk {
+  static if(condition: boolean, error: Error): MaybeOk {
     return condition ? Either.ok() : Either.right(error)
   }
 
@@ -46,6 +46,14 @@ export class Either<L, R> {
       throw new Error("Value is not left")
 
     return this.value as L
+  }
+
+  leftOr(defaultValue: L): L {
+    return this.isLeft ? this.left() : defaultValue
+  }
+
+  rightOr(defaultValue: R): R {
+    return this.isRight ? this.right() : defaultValue
   }
 
   right(): R {
