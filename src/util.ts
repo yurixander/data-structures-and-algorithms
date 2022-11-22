@@ -48,8 +48,20 @@ export namespace Util {
     let result = new Array(Math.max(a.length, b.length))
 
     for (let i = 0; i < result.length; i++)
-      result[i] = [Option.try(a[i]), Option.try(b[i])]
+      result[i] = [Option.try(a.at(i)), Option.try(b.at(i))]
 
     return result
+  }
+
+  export function tryZip<A, B>(a: A[], b: B[]): Option<Iterable<[A, B]>> {
+    if (a.length !== b.length)
+      return Option.none()
+
+    let result = new Array(Math.max(a.length, b.length))
+
+    for (let i = 0; i < result.length; i++)
+      result[i] = [a[i], b[i]]
+
+    return Option.some(result)
   }
 }

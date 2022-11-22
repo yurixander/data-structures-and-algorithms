@@ -17,7 +17,7 @@ export class SinglyLinkedList<T> {
       yield node
   }
 
-  reverse(): void {
+  reverseImperative(): void {
     let bufferOpt = Option.some<SinglyLinkedList<T>>(this)
     let previous = Option.none<SinglyLinkedList<T>>()
 

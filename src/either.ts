@@ -2,7 +2,17 @@ import { Util } from "./util"
 
 export type Result<T> = Either<T, Error>
 
+export type MaybeOk = Either<void, Error>
+
 export class Either<L, R> {
+  static ok(): MaybeOk {
+    return Either.left(undefined)
+  }
+
+  static ifTrueThenOk(condition: boolean, error: Error): MaybeOk {
+    return condition ? Either.ok() : Either.right(error)
+  }
+
   static left<T, U>(value: T): Either<T, U> {
     return new Either<T, U>(value, true)
   }
