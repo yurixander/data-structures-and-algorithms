@@ -4,7 +4,7 @@ type Falsy = undefined | null | false
 
 export class Option<T> {
   static none<T>(): Option<T> {
-    return null as any
+    return new Option<T>(null)
   }
 
   static some<T>(value: T): Option<T> {
@@ -27,7 +27,7 @@ export class Option<T> {
     return this.value === null
   }
 
-  isSome() {
+  isSome(): boolean {
     return !this.isNone()
   }
 

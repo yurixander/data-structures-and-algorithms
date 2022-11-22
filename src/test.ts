@@ -8,6 +8,10 @@ export function expect<T>(value: T): TestBuilder<T> {
   return new TestBuilder(value)
 }
 
+export function assert(condition: boolean): TestBuilder<boolean> {
+  return expect(condition).toEqual(true)
+}
+
 export enum Type {
   Object = "object",
   Function = "function",
@@ -92,6 +96,17 @@ export class TestBuilder<T> {
     return this.assert(_ => this.value instanceof other, new Error("Instance mismatch"))
   }
 
+  // TODO: Not so simple! The value is evaluated before this is called.
+  toThrow(): this {
+    return this.to(_ =>
+      Either.ifTrueThenOk(this.value instanceof Function, new Error("Value is not a function; it will never throw"))
+    )
+  }
+
+  toBeNull(): this {
+    return this.assert(_ => this.value === null, new Error("Value is not null"))
+  }
+
   to(functor: TestFunctor<T>): this {
     this.chain.push(functor)
 
@@ -113,11 +128,16 @@ export class TestBuilder<T> {
 export class TestSuite {
   private readonly tests: UnitTest[]
 
-  constructor(public readonly name: string) {
+  readonly name: string
+
+  constructor(namedEntity: Function | string) {
     this.tests = []
+    this.name = namedEntity instanceof Function ? namedEntity.name : namedEntity
   }
 
-  test<T>(name: string, callback: Util.Thunk<TestBuilder<T>>): this {
+  test<T>(entity: string | Function, callback: Util.Thunk<TestBuilder<T>>): this {
+    const name = entity instanceof Function ? entity.name : entity
+
     this.tests.push([name, () => callback().try()])
 
     return this
@@ -142,7 +162,7 @@ export class TestSuite {
           result = Either.right(new Error("Uncaught exception, which is not an error object"))
       }
 
-      const runtime = Math.round(performance.now() - startTime)
+      const runtime = Math.floor(performance.now() - startTime)
 
       if (result.isRight) {
         // CONSIDER: Combine log messages.

@@ -78,7 +78,7 @@ export class SinglyLinkedList<T> {
     let list: SinglyLinkedList<T>[] = []
     let buffer: Option<SinglyLinkedList<T>> = Option.some(this)
 
-    while (buffer !== Option.none()) {
+    while (buffer.isSome()) {
       list.push(buffer.unwrap())
       buffer = buffer.unwrap().next
     }

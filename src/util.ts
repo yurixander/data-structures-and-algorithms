@@ -5,6 +5,8 @@ export namespace Util {
 
   export type ThunkWithParam<T, U = void> = (_: T) => U
 
+  // TODO: Create `Predicate` type: same as ThunkWithParam, but returns boolean and input value is deep-readonly.
+
   // export interface Ordered {
   //   lessThan()
   // }
