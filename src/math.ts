@@ -1,4 +1,4 @@
-import { Either, Result } from "./either"
+import { Either, Result } from "./either.js"
 
 export namespace Math2 {
   export function factorialRecursiveNonTail(number: number): Result<number> {

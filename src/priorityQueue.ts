@@ -1,5 +1,5 @@
-import { MaxHeap } from "./maxHeap"
-import { Option } from "./option"
+import { MaxHeap } from "./maxHeap.js"
+import { Option } from "./option.js"
 
 type PriorityQueueHeapValue<T> = [T, number]
 

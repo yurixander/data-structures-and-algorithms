@@ -1,4 +1,4 @@
-import { Util } from "./util"
+import { Util } from "./util.js"
 
 export namespace Hashing {
   export function divisionMethod(k: number, m: number): number {

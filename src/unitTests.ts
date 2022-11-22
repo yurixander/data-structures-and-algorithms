@@ -1,5 +1,5 @@
-import { SinglyLinkedList } from "./singlyLinkedList"
-import { expect, TestSuite } from "./test"
+import { SinglyLinkedList } from "./singlyLinkedList.js"
+import { expect, TestSuite } from "./test.js"
 
 abstract class Hydrate {
   static get singlyLinkedList(): SinglyLinkedList<number> {

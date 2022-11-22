@@ -1,4 +1,4 @@
-import { SinglyLinkedList } from "./singlyLinkedList"
+import { SinglyLinkedList } from "./singlyLinkedList.js"
 
 export interface Monoid<T> {
   identity: T

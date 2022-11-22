@@ -1,8 +1,8 @@
-import { Either } from "./either"
-import { Matrix } from "./matrix"
-import { Performance } from "./performance"
-import { Stream } from "./stream"
-import { Option } from "./option"
+import { Either } from "./either.js"
+import { Matrix } from "./matrix.js"
+import { Performance } from "./performance.js"
+import { Stream } from "./stream.js"
+import { Option } from "./option.js"
 
 // TODO
 // let dimensions = {

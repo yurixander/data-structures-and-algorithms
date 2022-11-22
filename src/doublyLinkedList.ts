@@ -1,5 +1,5 @@
-import { Option } from "./option"
-import { SinglyLinkedList } from "./singlyLinkedList"
+import { Option } from "./option.js"
+import { SinglyLinkedList } from "./singlyLinkedList.js"
 
 export class DoublyLinkedList<T> extends SinglyLinkedList<T> {
   constructor(

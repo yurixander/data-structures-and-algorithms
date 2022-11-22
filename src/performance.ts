@@ -1,5 +1,5 @@
-import { Math2 } from "./math"
-import { Util } from "./util"
+import { Math2 } from "./math.js"
+import { Util } from "./util.js"
 
 export namespace Performance {
   /**

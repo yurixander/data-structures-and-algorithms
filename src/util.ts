@@ -1,4 +1,4 @@
-import { Option } from "./option"
+import { Option } from "./option.js"
 
 export namespace Util {
   export type Thunk<T = void> = () => T

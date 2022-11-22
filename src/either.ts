@@ -1,4 +1,4 @@
-import { Util } from "./util"
+import { Util } from "./util.js"
 
 export type Result<T> = Either<T, Error>
 
@@ -26,7 +26,10 @@ export class Either<L, R> {
       return Either.left(thunk())
     }
     catch (error) {
-      return Either.right(error as Error)
+      if (error instanceof Error)
+        return Either.right(error)
+      else
+        return Either.right(new Error("Uncaught exception thrown, which is not of type error!"))
     }
   }
 

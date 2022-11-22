@@ -1,5 +1,6 @@
-import { Either, MaybeOk, Result } from "./either"
-import { Util } from "./util"
+import chalk from "chalk"
+import { Either, MaybeOk, Result } from "./either.js"
+import { Util } from "./util.js"
 
 type UnitTest = [string, Util.Thunk<MaybeOk>]
 
@@ -123,12 +124,13 @@ export class TestSuite {
   }
 
   run(): void {
-    console.log(`=== Running tests suite '${this.name}' ===`)
+    console.log(chalk.bgBlue.black(" RUN "), this.name)
 
     let failingTests: [string, string][] = []
 
     for (const test of this.tests) {
       let result: MaybeOk
+      const startTime = performance.now()
 
       try {
         result = test[1]()
@@ -140,23 +142,25 @@ export class TestSuite {
           result = Either.right(new Error("Uncaught exception, which is not an error object"))
       }
 
+      const runtime = Math.round(performance.now() - startTime)
+
       if (result.isRight) {
-        console.log(`[FAIL] ${test[0]}: ${result.right().message}`)
+        // CONSIDER: Combine log messages.
+        console.log(`  ${chalk.red("✗".trim())} ${test[0]} (${runtime}ms)`)
         failingTests.push([test[0], result.right().message])
       }
       else
-        console.log(`[OK] ${test[0]}`)
+        console.log(chalk.gray(`  ${chalk.green("✓")} ${test[0]} (${runtime}ms)`))
     }
 
     // Add a newline to separate output.
     console.log()
 
     if (failingTests.length === 0)
-      console.log(`... All ${this.tests.length} tests completed successfully ...`)
+      console.log(chalk.bgGreen.black(" PASS "))
     else {
-      console.log(`=== Finished with ${this.tests.length - failingTests.length} passing and ${failingTests.length} failing tests ===`)
-      console.log("Failing tests:")
-      failingTests.forEach(failingTest => console.log(`  - ${failingTest[0]}: ${failingTest[1]}`))
+      console.log(chalk.bgRed.black(" FAIL "))
+      failingTests.forEach(failingTest => console.log(`  ${chalk.red("✗")} ${failingTest[0]}: ${failingTest[1]}`))
     }
   }
 }

@@ -1,4 +1,4 @@
-import { Lazy } from "./lazy"
+import { Lazy } from "./lazy.js"
 
 export class String {
   private chars: string[] = []

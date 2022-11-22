@@ -1,4 +1,4 @@
-import { Util } from "./util"
+import { Util } from "./util.js"
 
 export abstract class Iterable2<T> {
   abstract get values(): T[]

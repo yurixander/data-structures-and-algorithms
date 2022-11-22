@@ -1,5 +1,5 @@
-import { Option } from "./option"
-import { Util } from "./util"
+import { Option } from "./option.js"
+import { Util } from "./util.js"
 
 type Entry<T> = [T, number]
 

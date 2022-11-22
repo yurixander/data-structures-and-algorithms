@@ -1,4 +1,4 @@
-import { Util } from "./util"
+import { Util } from "./util.js"
 
 export class Vector<T> {
   private capacity_: number

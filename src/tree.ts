@@ -1,4 +1,4 @@
-import { Util } from "./util"
+import { Util } from "./util.js"
 
 export class Tree<T> {
   constructor(public value: T, public children: Tree<T>[] = []) {

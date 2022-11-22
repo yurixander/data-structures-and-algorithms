@@ -1,6 +1,6 @@
-import { Comparator } from "./algorithm"
-import { MinHeap } from "./minHeap"
-import { Util } from "./util"
+import { Comparator } from "./algorithm.js"
+import { MinHeap } from "./minHeap.js"
+import { Util } from "./util.js"
 
 export type MaxHeapInverter<T> = Util.ThunkWithParam<T, T>
 

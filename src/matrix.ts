@@ -1,6 +1,6 @@
-import { Either, Result } from "./either"
-import { Option } from "./option"
-import { Util } from "./util"
+import { Either, Result } from "./either.js"
+import { Option } from "./option.js"
+import { Util } from "./util.js"
 
 export type MatrixForEachCallback<T, U = void> = (value: T, row: number, column: number) => U
 

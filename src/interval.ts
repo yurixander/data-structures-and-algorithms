@@ -1,6 +1,6 @@
-import { Either, Result } from "./either"
-import { Option } from "./option"
-import { Util } from "./util"
+import { Either, Result } from "./either.js"
+import { Option } from "./option.js"
+import { Util } from "./util.js"
 
 export class Interval {
   static unit(from: number, to: number): Result<Interval> {
