@@ -86,4 +86,17 @@ export namespace Util {
 
     return Option.some(cursor)
   }
+
+  export function range(from: number, to: number): number[] {
+    if (from > to)
+      throw new Error("Range bounds are invalid")
+
+    const length = to - from
+    let result = new Array(length + 1)
+
+    for (let i = 0; i <= length; i++)
+      result[i] = from + i
+
+    return result
+  }
 }

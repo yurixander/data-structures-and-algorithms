@@ -9,7 +9,7 @@ import { Option } from "./option.js"
 import { PriorityQueue } from "./priorityQueue.js"
 import { SinglyLinkedList } from "./singlyLinkedList.js"
 import { Stream } from "./stream.js"
-import { assert, expect, suite } from "./test.js"
+import { assert, assertThrows, expect, suite } from "./test.js"
 import { Util } from "./util.js"
 
 enum Size {
@@ -132,7 +132,7 @@ suite(SinglyLinkedList)
 suite({ Util })
   .test(
     Util.unimplemented,
-    () => expect(() => Util.unimplemented()).toThrow()
+    () => assertThrows(() => Util.unimplemented())
   )
   .test(
     Util.validateIndex,
@@ -140,6 +140,13 @@ suite({ Util })
       assert(!Util.validateIndex(0, 0)),
       assert(Util.validateIndex(0, 1)),
       assert(!Util.validateIndex(-1, 1))
+    ]
+  )
+  .test(
+    Util.range,
+    () => [
+      expect(Util.range(0, 3)).toEqual([0, 1, 2, 3]),
+      assertThrows(() => Util.range(1, 0))
     ]
   )
   .run()
@@ -186,7 +193,7 @@ suite(Either)
     Either.prototype.left,
     () => [
       expect(Either.left(null).left()).toEqual(null),
-      expect(() => Either.right(null).left()).toThrow()
+      assertThrows(() => Either.right(null).left())
     ]
   )
   .run()
@@ -204,11 +211,11 @@ suite(Option)
     () => expect(Hydrate.option().unwrapOrDefault(testValue)).toEqual(testValue)
   )
   .test(Option.prototype.unwrap, () => [
-    expect(() => Hydrate.option().unwrap()).toThrow(),
+    assertThrows(() => Hydrate.option().unwrap()),
     expect(Hydrate.option(testValue).unwrap()).toEqual(testValue)
   ])
   .test(Option.prototype.unwrapOrFailWith, () => [
-    expect(() => Hydrate.option().unwrapOrFailWith("")).toThrow(),
+    assertThrows(() => Hydrate.option().unwrapOrFailWith("")),
     expect(Hydrate.option(testValue).unwrapOrFailWith("")).toEqual(testValue)
   ])
   .test(Option.prototype.map, () => [

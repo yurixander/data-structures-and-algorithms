@@ -12,7 +12,11 @@ export class Option<T> {
   }
 
   static try<T>(result: T | Falsy): Option<T> {
-    return !result ? Option.none() : Option.some(result)
+    return result === null
+      || result === undefined
+      || (typeof result === "boolean" && !result)
+      ? Option.none()
+      : Option.some(result)
   }
 
   static map2<A, B, C>(aOpt: Option<A>, bOpt: Option<B>, thunk: (a: A, b: B) => C): Option<C> {

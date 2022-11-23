@@ -1,13 +1,13 @@
 import { Util } from "./util.js"
 
-export abstract class Iterable2<T> {
+export abstract class Iterator<T> {
   abstract get values(): T[]
 
   constructor(public readonly iterable: Iterable<T>) {
     //
   }
 
-  map(mapper: Util.ThunkWithParam<T, T>): Iterable2<T> {
+  map(mapper: Util.ThunkWithParam<T, T>): Iterator<T> {
     // TODO: Implement.
     Util.unimplemented()
 

@@ -24,8 +24,27 @@ export function expect<T>(value: T): TestBuilder<T> {
   return new TestBuilder(value)
 }
 
-export function assert(condition: boolean): TestBuilder<boolean> {
+export function assert(condition: boolean, message?: string): TestBuilder<boolean> {
   return expect(condition).toEqual(true)
+}
+
+export function assertThrows(thunk: () => unknown, cause?: string): TestBuilder<() => unknown> {
+  return expect(thunk).to(_ => {
+    try {
+      _.value()
+
+      return Either.right(new Error("No error was thrown"))
+    }
+    catch (error) {
+      // REVISE: Simplify.
+      if (cause !== undefined && !(error instanceof Error))
+        return Either.right(new Error("Expected error but caught different object"))
+      else if (cause !== undefined && error instanceof Error)
+        return Either.if(error.cause !== cause, new Error("Error cause mismatch"))
+
+      return Either.ok()
+    }
+  })
 }
 
 export enum Type {
@@ -61,8 +80,8 @@ export class TestBuilder<T> {
 
   private difference<A, B>(actual: A, expected: B): string {
     return [
-      chalk.green(`\n      + ${expected}`),
-      chalk.red(`\n      - ${actual}`)
+      chalk.green(`\n      + ${JSON.stringify(expected)}`),
+      chalk.red(`\n      - ${JSON.stringify(actual)}`)
     ].join("")
   }
 
@@ -71,7 +90,8 @@ export class TestBuilder<T> {
       // TODO: Add an equality helper for deep comparisons.
       if (a.isNone() || b.isNone() || a.unwrap() !== b.unwrap())
         // TODO: Need a more descriptive message. Perhaps compare diffs?
-        return Either.right(new Error(`Element differs ${this.difference(a.unwrap(), b.unwrap())}`))
+        // BUG: Cannot unwrap if it is none. Temporarily passing in the entire object.
+        return Either.right(new Error(`Element differs ${this.difference(a, b)}`))
 
     return Either.ok()
   }
@@ -131,34 +151,6 @@ export class TestBuilder<T> {
 
   toBeInstanceOf(other: Function): this {
     return this.assert(_ => this.value instanceof other, new Error("Instance mismatch"))
-  }
-
-  toThrow(cause?: string): this {
-    return this.to(_ => {
-      if (!(this.value instanceof Function))
-        return Either.right(new Error("Value is not a function; it will never throw"))
-
-      // REVISE: This means that anywhere that we use the `toThrow` function, the value wi'll be encapsulated within a thunk.
-      // BUG: Cannot retrieve arguments or prototype of an arrow function/closure.
-      // if (this.value.prototype.constructor.length > 0)
-      //   // REVISE: Error message is too vague.
-      //   return Either.right(new Error("(Throws?) Function must be a thunk, but it takes arguments"))
-
-      try {
-        this.value()
-
-        return Either.right(new Error("No error was thrown"))
-      }
-      catch (error) {
-        // REVISE: Simplify.
-        if (cause !== undefined && !(error instanceof Error))
-          return Either.right(new Error("Expected error but caught different object"))
-        else if (cause !== undefined && error instanceof Error)
-          return Either.if(error.cause !== cause, new Error("Error cause mismatch"))
-
-        return Either.ok()
-      }
-    })
   }
 
   toBeNull(): this {
@@ -266,6 +258,19 @@ export class TestSuite {
       this.name = target
   }
 
+  private beautifyErrorStack(stack: string | undefined): string {
+    if (stack === undefined)
+      return ""
+
+    const spacing = "      "
+
+    return spacing + stack
+      .split("\n")
+      .slice(1)
+      .map(line => chalk.gray(line.trim()))
+      .join("\n" + spacing)
+  }
+
   // REVIEW: Using `any`.
   // CONSIDER: Restricting target's name to `keyof typeof T`.
   test(target: string | Function, callback: Util.Thunk<TestBuilder<any> | TestBuilder<any>[]>): this {
@@ -328,7 +333,9 @@ export class TestSuite {
       }
       catch (error) {
         if (error instanceof Error)
-          result = Either.right(new Error(`Uncaught exception: ${error.message}`))
+          result = Either.right(
+            new Error(`Uncaught exception: ${error.message}\n${this.beautifyErrorStack(error.stack)}`)
+          )
         else
           result = Either.right(new Error("Uncaught exception, which is not an error object"))
       }
