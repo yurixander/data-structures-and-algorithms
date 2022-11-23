@@ -1,6 +1,16 @@
+import { BinaryTree } from "./binaryTree.js"
+import { DoublyLinkedList } from "./doublyLinkedList.js"
+import { Either } from "./either.js"
+import { Graph } from "./graph.js"
+import { Matrix } from "./matrix.js"
+import { MaxHeap } from "./maxHeap.js"
+import { MinHeap } from "./minHeap.js"
 import { Option } from "./option.js"
+import { PriorityQueue } from "./priorityQueue.js"
 import { SinglyLinkedList } from "./singlyLinkedList.js"
-import { assert, expect, TestSuite, Type } from "./test.js"
+import { Stream } from "./stream.js"
+import { assert, expect, suite } from "./test.js"
+import { Util } from "./util.js"
 
 enum Size {
   Zero = 0,
@@ -10,6 +20,8 @@ enum Size {
   Medium = 100,
   Large = 100_000
 }
+
+const testValue = 1
 
 abstract class Hydrate {
   static singlyLinkedList(size: Size = Size.One): SinglyLinkedList<number> {
@@ -32,6 +44,14 @@ abstract class Hydrate {
     return head!
   }
 
+  static option(value: number | null = null): Option<number> {
+    return new Option(value)
+  }
+
+  static get matrix(): Matrix<number> {
+    return Matrix.unit<number>(3, 3).left()
+  }
+
   static map<T, U>(value: T) {
     return (callback: (_: T) => U | void) => {
       const result = callback(value)
@@ -41,12 +61,12 @@ abstract class Hydrate {
   }
 }
 
-new TestSuite(SinglyLinkedList)
+suite(SinglyLinkedList)
   .test("constructor", () => expect(Hydrate.singlyLinkedList()).toBeInstanceOf(SinglyLinkedList))
   .test(
     SinglyLinkedList.prototype.collectIterative,
     () => expect(Hydrate.singlyLinkedList(Size.Medium).collectIterative())
-      .toBeArrayOfSize(Size.Medium)
+      .toBeArrayOfLength(Size.Medium)
   )
   .test(
     SinglyLinkedList.prototype.reverseImperative,
@@ -63,11 +83,11 @@ new TestSuite(SinglyLinkedList)
   )
   .test(
     SinglyLinkedList.prototype.findTail,
-    () => expect(Hydrate.singlyLinkedList(3).findTail().value).toEqual(3)
+    () => expect(Hydrate.singlyLinkedList(Size.Three).findTail().value).toEqual(Size.Three)
   )
   .test(
     SinglyLinkedList.prototype.count,
-    () => expect(Hydrate.singlyLinkedList().count()).toEqual(1)
+    () => expect(Hydrate.singlyLinkedList().count()).toEqual(Size.One)
   )
   .test(
     SinglyLinkedList.prototype.findMiddle,
@@ -85,4 +105,114 @@ new TestSuite(SinglyLinkedList)
     SinglyLinkedList.prototype.findNthNode,
     () => expect(Hydrate.singlyLinkedList(Size.Large).findNthNode(50).unwrap().value).toEqual(51)
   )
+  .test(
+    SinglyLinkedList.prototype.filter,
+    () => expect(Hydrate.singlyLinkedList(Size.Medium).filter(_ => _.value >= 50)).toBeArrayOfLength(51)
+  )
+  .test(
+    SinglyLinkedList.prototype.deleteNthNode,
+    () => expect(Hydrate.map(Hydrate.singlyLinkedList(Size.Medium))(_ => {
+      _.deleteNthNode(Size.Medium / 2)
+
+      return _.collectIterative()
+    }))
+      .toBeArrayOfLength(Size.Medium - 1)
+  )
+  .test(
+    SinglyLinkedList.prototype.insertAfter,
+    () => expect(Hydrate.map(Hydrate.singlyLinkedList(Size.One))(_ => {
+      _.insertAfter(Hydrate.singlyLinkedList(Size.One))
+
+      return _.collectIterative()
+    }))
+      .toBeArrayOfLength(Size.One + 1)
+  )
+  .run()
+
+suite({ Util })
+  .test(
+    Util.unimplemented,
+    () => expect(() => Util.unimplemented()).toThrow()
+  )
+  .test(
+    Util.validateIndex,
+    () => [
+      assert(!Util.validateIndex(0, 0)),
+      assert(Util.validateIndex(0, 1)),
+      assert(!Util.validateIndex(-1, 1))
+    ]
+  )
+  .run()
+
+suite(DoublyLinkedList)
+  .run()
+
+suite(Matrix)
+  // BUG: Throwing.
+  // .test(
+  //   Matrix.prototype.get,
+  //   () => expect(Hydrate.matrix.get(-1, -1)).toBeNone()
+  // )
+  .test(
+    Matrix.prototype.isFull,
+    () => assert(!Hydrate.matrix.isFull())
+  )
+  .run()
+
+suite(PriorityQueue)
+  .run()
+
+suite(Stream)
+  .test(
+    Stream.prototype.take,
+    () => expect(Stream.fibonacci.take(5).toArrayImperative()).toEqual([0, 1, 1, 2, 3])
+  )
+  .run()
+
+suite(Graph)
+  .run()
+
+suite(BinaryTree)
+  .run()
+
+suite(MinHeap)
+  .run()
+
+suite(MaxHeap)
+  .run()
+
+suite(Either)
+  .test(
+    Either.prototype.left,
+    () => [
+      expect(Either.left(null).left()).toEqual(null),
+      expect(() => Either.right(null).left()).toThrow()
+    ]
+  )
+  .run()
+
+suite(Option)
+  .test(
+    Option.prototype.isSome,
+    () => assert(Hydrate.option(testValue).isSome())
+  )
+  .test(
+    Option.prototype.isNone,
+    () => assert(Hydrate.option().isNone())
+  )
+  .test(Option.prototype.unwrapOrDefault,
+    () => expect(Hydrate.option().unwrapOrDefault(testValue)).toEqual(testValue)
+  )
+  .test(Option.prototype.unwrap, () => [
+    expect(() => Hydrate.option().unwrap()).toThrow(),
+    expect(Hydrate.option(testValue).unwrap()).toEqual(testValue)
+  ])
+  .test(Option.prototype.unwrapOrFailWith, () => [
+    expect(() => Hydrate.option().unwrapOrFailWith("")).toThrow(),
+    expect(Hydrate.option(testValue).unwrapOrFailWith("")).toEqual(testValue)
+  ])
+  .test(Option.prototype.map, () => [
+    assert(Hydrate.option().map(_ => testValue).isNone()),
+    expect(Hydrate.option(testValue).map(_ => _ + 1).unwrap()).toEqual(testValue + 1)
+  ])
   .run()

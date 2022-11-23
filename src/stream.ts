@@ -55,7 +55,7 @@ export class Stream<T> {
 
   // BUG: Somehow, for the last stream node, it is `null`.
   take(amount: number): Stream<T> {
-    let next = this.next.isSome() && amount > 1
+    const next = this.next.isSome() && amount > 1
       ? Option.some(() => this.next.unwrap()().take(amount - 1))
       : Option.none<Util.Thunk<Stream<T>>>()
 
@@ -70,7 +70,7 @@ export class Stream<T> {
   }
 
   toArrayImperative(): T[] {
-    let result = []
+    let result = [this.value]
     let nodeOpt: Stream<T> = this
 
     while (nodeOpt.next.isSome()) {

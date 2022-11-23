@@ -14,11 +14,11 @@ export class MaxHeap<T> extends MinHeap<T> {
     super([], comparator)
   }
 
-  get(): T {
+  override get(): T {
     return this.inverter(super.get())
   }
 
-  insert(value: T): void {
+  override insert(value: T): void {
     super.insert(this.inverter(value))
   }
 }

@@ -3,9 +3,9 @@ import { Option } from "./option.js"
 
 export class BinarySearchTree<T> extends BinaryTree<T> {
   constructor(
-    public value: T,
-    public left: Option<BinarySearchTree<T>> = Option.none(),
-    public right: Option<BinarySearchTree<T>> = Option.none()
+    public override value: T,
+    public override left: Option<BinarySearchTree<T>> = Option.none(),
+    public override right: Option<BinarySearchTree<T>> = Option.none()
   ) {
     super(value, left, right)
   }

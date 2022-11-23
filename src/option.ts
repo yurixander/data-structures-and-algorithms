@@ -32,10 +32,10 @@ export class Option<T> {
   }
 
   unwrap(): T {
-    return this.unwrapOrFail("Attempted to unwrap none value")
+    return this.unwrapOrFailWith("Attempted to unwrap none value")
   }
 
-  unwrapOrFail(message: string): T {
+  unwrapOrFailWith(message: string): T {
     if (this.value === null)
       throw new Error(message)
 

@@ -66,4 +66,24 @@ export namespace Util {
 
     return Option.some(result)
   }
+
+  export function tryExtractDeepProperty(unsafeObject: any, propertyChain: string[]): Option<unknown> {
+    if (propertyChain.length === 0)
+      return unsafeObject
+
+    let cursor = unsafeObject
+    let position = 0
+
+    while (position !== propertyChain.length) {
+      const next = cursor[propertyChain[position]]
+
+      if (next === undefined)
+        return Option.none()
+
+      cursor = next
+      position++
+    }
+
+    return Option.some(cursor)
+  }
 }

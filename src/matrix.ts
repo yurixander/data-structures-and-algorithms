@@ -57,6 +57,7 @@ export class Matrix<T> {
   }
 
   get(row: number, column: number): Option<T> {
+    // BUG: If the row is undefined, the other accessor will fail with an error.
     return Option.try(this.values[row][column])
   }
 
