@@ -9,6 +9,10 @@ export class Either<L, R> {
     return Either.left(undefined)
   }
 
+  static error(message: string): MaybeOk {
+    return Either.right(new Error(message))
+  }
+
   static if(condition: boolean, error: Error): MaybeOk {
     return condition ? Either.ok() : Either.right(error)
   }

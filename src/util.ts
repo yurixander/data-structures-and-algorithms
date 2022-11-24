@@ -1,6 +1,8 @@
 import { Option } from "./option.js"
 
 export namespace Util {
+  export type Pair<T, U> = [first: T, second: U]
+
   export type Thunk<T = void> = () => T
 
   export type ThunkWithParam<T, U = void> = (_: T) => U

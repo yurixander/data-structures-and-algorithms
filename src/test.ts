@@ -25,6 +25,7 @@ export function expect<T>(value: T): TestBuilder<T> {
 }
 
 export function assert(condition: boolean, message?: string): TestBuilder<boolean> {
+  // TODO: Use message.
   return expect(condition).toEqual(true)
 }
 
@@ -33,12 +34,12 @@ export function assertThrows(thunk: () => unknown, cause?: string): TestBuilder<
     try {
       _.value()
 
-      return Either.right(new Error("No error was thrown"))
+      return Either.error("No error was thrown")
     }
     catch (error) {
       // REVISE: Simplify.
       if (cause !== undefined && !(error instanceof Error))
-        return Either.right(new Error("Expected error but caught different object"))
+        return Either.error("Expected error but caught different object")
       else if (cause !== undefined && error instanceof Error)
         return Either.if(error.cause !== cause, new Error("Error cause mismatch"))
 
@@ -91,7 +92,7 @@ export class TestBuilder<T> {
       if (a.isNone() || b.isNone() || a.unwrap() !== b.unwrap())
         // TODO: Need a more descriptive message. Perhaps compare diffs?
         // BUG: Cannot unwrap if it is none. Temporarily passing in the entire object.
-        return Either.right(new Error(`Element differs ${this.difference(a, b)}`))
+        return Either.error(`Element differs ${this.difference(a, b)}`)
 
     return Either.ok()
   }
@@ -100,22 +101,20 @@ export class TestBuilder<T> {
     if (typeof this.value !== "object" || this.value === null || !Array.isArray(this.value))
       return Either.right(new Error("Value is not an array"))
     else if (this.value.length !== expected.length)
-      return Either.right(
-        new Error(`Array lengths differ ${this.difference(this.value.length, expected.length)}`)
-      )
+      return Either.error(`Array lengths differ ${this.difference(this.value.length, expected.length)}`)
 
     return this.compareElements(this.value, expected)
   }
 
   private compareWithObject<U extends object>(object: U): MaybeOk {
     if (typeof this.value !== "object" || this.value === null)
-      return Either.right(new Error("Value is not an object"))
+      return Either.error("Value is not an object")
 
     const valueKeys = Object.keys(this.value)
     const objectKeys = Object.keys(object)
 
     if (valueKeys.length !== objectKeys.length)
-      return Either.right(new Error("Objects differ in key lengths"))
+      return Either.error("Objects differ in key lengths")
 
     return this.compareElements(valueKeys, objectKeys)
   }
@@ -160,7 +159,7 @@ export class TestBuilder<T> {
   toBeArrayOfLength(length: number): this {
     return this.to(_ => {
       if (!Array.isArray(this.value))
-        return Either.right(new Error("Value is not an array"))
+        return Either.error("Value is not an array")
 
       return Either.if(
         this.value.length === length,
@@ -172,7 +171,7 @@ export class TestBuilder<T> {
   toBeOption(isSome: boolean): this {
     return this.to(_ => {
       if (!(this.value instanceof Option))
-        return Either.right(new Error("Value is not an instance of Option"))
+        return Either.error("Value is not an instance of Option")
 
       const condition = this.value.isSome() === isSome
 
@@ -186,6 +185,33 @@ export class TestBuilder<T> {
 
   toBeNone(): this {
     return this.toBeOption(false)
+  }
+
+  toMatchPartial(partial: Partial<T>): this {
+    return this.to(_ => {
+      if (typeof this.value !== "object" || this.value === null)
+        return Either.error(`Value is not an object ${this.difference(TestBuilder.determineTypeOf(this.value), "object")}`)
+
+      const object = this.value as { [_: string]: unknown }
+      const partialKeys = Object.keys(partial)
+      const valueKeys = Object.keys(this.value)
+
+      if (partialKeys.length > valueKeys.length)
+        return Either.error(`Partial object has more keys than value ${this.difference(valueKeys.length, partialKeys.length)}`)
+
+      for (const partialKey in partial) {
+        const objectValue = object[partialKey]
+        const partialValue = partial[partialKey]
+
+        if (objectValue === undefined)
+          return Either.error(`Value is missing key, or property is undefined: ${partialKey} ${this.difference(undefined, partialValue)}`)
+        // TODO: Use deep comparison.
+        else if (objectValue !== partialValue)
+          return Either.error(`Object property mismatch: ${partialKey} ${this.difference(objectValue, partialValue)}`)
+      }
+
+      return Either.ok()
+    })
   }
 
   map<U>(callback: Util.ThunkWithParam<T, U>): TestBuilder<U> {
@@ -204,7 +230,7 @@ export class TestBuilder<T> {
     return this.to(() => Either.if(condition(this), error))
   }
 
-  not(functor: Matcher<T>): this {
+  not(matcher: Matcher<T>): this {
     // TODO: Implement.
     Util.unimplemented()
   }
@@ -262,12 +288,12 @@ export class TestSuite {
     if (stack === undefined)
       return ""
 
-    const spacing = "      "
+    const spacing = "        "
 
     return spacing + stack
       .split("\n")
       .slice(1)
-      .map(line => chalk.gray(line.trim()))
+      .map(line => chalk.gray("• " + line.trim().slice(3)))
       .join("\n" + spacing)
   }
 
@@ -333,11 +359,9 @@ export class TestSuite {
       }
       catch (error) {
         if (error instanceof Error)
-          result = Either.right(
-            new Error(`Uncaught exception: ${error.message}\n${this.beautifyErrorStack(error.stack)}`)
-          )
+          result = Either.error(`Uncaught exception: ${error.message}\n${this.beautifyErrorStack(error.stack)}`)
         else
-          result = Either.right(new Error("Uncaught exception, which is not an error object"))
+          result = Either.error("Uncaught exception, which is not an error object")
       }
 
       const runtime = Math.floor(performance.now() - startTime)
@@ -365,7 +389,7 @@ export class TestSuite {
       console.log(" ", chalk.bgGreen.black(" PASS "), chalk.gray(`${overallRuntime}ms`))
     else {
       console.log(" ", chalk.bgRed.black(" * FAIL "), chalk.gray(`${overallRuntime}ms`))
-      failingTests.forEach(failingTest => console.log(`    ${chalk.red("✗")} ${failingTest[0]}: ${failingTest[1]}`))
+      failingTests.forEach(failingTest => console.log(`    ${chalk.red("*")} ${failingTest[0]}: ${failingTest[1]}`))
     }
 
     console.log()

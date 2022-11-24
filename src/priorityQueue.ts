@@ -1,26 +1,28 @@
-import { MaxHeap } from "./maxHeap.js"
+import { Heap } from "./heap.js"
 import { Option } from "./option.js"
+import { Util } from "./util.js"
 
 type PriorityQueueHeapValue<T> = [T, number]
 
 export class PriorityQueue<TValue> {
-  private maxHeap: MaxHeap<PriorityQueueHeapValue<TValue>>
+  private maxHeap: Heap<PriorityQueueHeapValue<TValue>>
 
   constructor() {
     // TODO: Fix comparator.
-    this.maxHeap = new MaxHeap(value => [value[0], -value[1]], (a, b) => a[1] === b[1])
+    // this.maxHeap = new Heap(value => [value[0], -value[1]], (a, b) => a[1] === b[1])
 
     // TODO: Finish implementing.
     throw new Error("Not yet implemented")
   }
 
   enqueue(value: TValue, priority: number) {
-    this.maxHeap.insert([value, priority])
+    this.maxHeap.add([value, priority])
   }
 
   dequeue(): Option<TValue> {
-    return Option.some(this.maxHeap.get()[0])
+    // return Option.some(this.maxHeap.poll()[0])
 
-    // TODO: Perform sift operation.
+    // TODO: Finish implementation.
+    Util.unimplemented()
   }
 }

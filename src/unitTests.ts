@@ -3,8 +3,7 @@ import { DoublyLinkedList } from "./doublyLinkedList.js"
 import { Either } from "./either.js"
 import { Graph } from "./graph.js"
 import { Matrix } from "./matrix.js"
-import { MaxHeap } from "./maxHeap.js"
-import { MinHeap } from "./minHeap.js"
+import { Heap } from "./heap.js"
 import { Option } from "./option.js"
 import { PriorityQueue } from "./priorityQueue.js"
 import { SinglyLinkedList } from "./singlyLinkedList.js"
@@ -182,10 +181,7 @@ suite(Graph)
 suite(BinaryTree)
   .run()
 
-suite(MinHeap)
-  .run()
-
-suite(MaxHeap)
+suite(Heap)
   .run()
 
 suite(Either)
@@ -199,6 +195,10 @@ suite(Either)
   .run()
 
 suite(Option)
+  .test(
+    Option.prototype.bind,
+    () => assert(Hydrate.option(testValue).bind(_ => Option.none()).isNone())
+  )
   .test(
     Option.prototype.isSome,
     () => assert(Hydrate.option(testValue).isSome())
