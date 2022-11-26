@@ -1,4 +1,4 @@
-import { Util } from "./util.js"
+import { unimplemented } from "./util"
 
 export class Vector<T> {
   private capacity_: number
@@ -30,7 +30,7 @@ export class Vector<T> {
 
   pushFront(...values: T[]) {
     // TODO: Implement.
-    Util.unimplemented()
+    unimplemented()
   }
 
   zip(other: Vector<T>, callback: (a: T, b: T) => void): boolean {

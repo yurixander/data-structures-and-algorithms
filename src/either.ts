@@ -1,4 +1,4 @@
-import { Util } from "./util.js"
+import { Thunk, ThunkWithParam } from "./util"
 
 export type Result<T> = Either<T, Error>
 
@@ -25,7 +25,7 @@ export class Either<L, R> {
     return new Either<T, U>(value, false)
   }
 
-  static try<T>(thunk: Util.Thunk<T | never>): Result<T> {
+  static try<T>(thunk: Thunk<T | never>): Result<T> {
     try {
       return Either.left(thunk())
     }
@@ -67,14 +67,14 @@ export class Either<L, R> {
     return this.value as R
   }
 
-  mapLeft(callback: Util.ThunkWithParam<L>): Either<L, R> {
+  mapLeft(callback: ThunkWithParam<L>): Either<L, R> {
     if (this.isLeft)
       callback(this.left())
 
     return this
   }
 
-  mapRight(callback: Util.ThunkWithParam<R>): Either<L, R> {
+  mapRight(callback: ThunkWithParam<R>): Either<L, R> {
     if (this.isRight)
       callback(this.right())
 

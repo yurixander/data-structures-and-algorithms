@@ -1,6 +1,6 @@
 import { Heap } from "./heap.js"
 import { Option } from "./option.js"
-import { Util } from "./util.js"
+import { unimplemented } from "./util.js"
 
 type PriorityQueueHeapValue<T> = [T, number]
 
@@ -23,6 +23,6 @@ export class PriorityQueue<TValue> {
     // return Option.some(this.maxHeap.poll()[0])
 
     // TODO: Finish implementation.
-    Util.unimplemented()
+    unimplemented()
   }
 }

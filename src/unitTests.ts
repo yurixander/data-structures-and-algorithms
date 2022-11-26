@@ -29,7 +29,7 @@ abstract class Hydrate {
     let previous: SinglyLinkedList<number> | null = null
 
     while (counter !== size) {
-      let node = new SinglyLinkedList(counter + 1)
+      const node = new SinglyLinkedList(counter + 1)
 
       if (head === null)
         head = node
@@ -197,7 +197,7 @@ suite(Either)
 suite(Option)
   .test(
     Option.prototype.bind,
-    () => assert(Hydrate.option(testValue).bind(_ => Option.none()).isNone())
+    () => assert(Hydrate.option(testValue).bind(() => Option.none()).isNone())
   )
   .test(
     Option.prototype.isSome,
@@ -219,7 +219,7 @@ suite(Option)
     expect(Hydrate.option(testValue).unwrapOrFailWith("")).toEqual(testValue)
   ])
   .test(Option.prototype.map, () => [
-    assert(Hydrate.option().map(_ => testValue).isNone()),
+    assert(Hydrate.option().map(() => testValue).isNone()),
     expect(Hydrate.option(testValue).map(_ => _ + 1).unwrap()).toEqual(testValue + 1)
   ])
   .run()

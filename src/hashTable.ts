@@ -1,5 +1,5 @@
 import { Option } from "./option.js"
-import { Util } from "./util.js"
+import { unimplemented } from "./util.js"
 
 export class HashTable<TKey, TValue> {
   constructor() {
@@ -16,6 +16,6 @@ export class HashTable<TKey, TValue> {
 
   has(key: TKey): boolean {
     // TODO: Implement.
-    Util.unimplemented()
+    unimplemented()
   }
 }

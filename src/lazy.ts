@@ -1,10 +1,10 @@
 import { Option } from "./option.js"
-import { Util } from "./util.js"
+import { Thunk } from "./util.js"
 
 export class Lazy<T> {
   private cachedResult: Option<T>
 
-  constructor(public operation: Util.Thunk<T>) {
+  constructor(public operation: Thunk<T>) {
     this.cachedResult = Option.none()
   }
 

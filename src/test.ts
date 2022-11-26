@@ -1,18 +1,16 @@
 import chalk from "chalk"
 import { Either, MaybeOk } from "./either.js"
 import { Option } from "./option.js"
-import { Util } from "./util.js"
+import { IndexableObject, Thunk, ThunkWithParam, zip, unimplemented } from "./util.js"
 
 enum TestType {
   Unit
 }
 
-type IndexableObject = { [propertyName: string]: any }
-
 type Test = {
   type: TestType,
   name: string,
-  executor?: Util.Thunk<MaybeOk>
+  executor?: Thunk<MaybeOk>
 }
 
 export function suite(target: IndexableObject | Function): TestSuite {
@@ -73,7 +71,7 @@ export class TestBuilder<T> {
     return typeof value as Type
   }
 
-  private chain: Util.ThunkWithParam<this, MaybeOk>[]
+  private chain: ThunkWithParam<this, MaybeOk>[]
 
   constructor(public readonly value: T) {
     this.chain = []
@@ -87,7 +85,7 @@ export class TestBuilder<T> {
   }
 
   private compareElements<U>(arrayA: U[], arrayB: U[]): MaybeOk {
-    for (const [a, b] of Util.zip(arrayA, arrayB))
+    for (const [a, b] of zip(arrayA, arrayB))
       // TODO: Add an equality helper for deep comparisons.
       if (a.isNone() || b.isNone() || a.unwrap() !== b.unwrap())
         // TODO: Need a more descriptive message. Perhaps compare diffs?
@@ -97,7 +95,7 @@ export class TestBuilder<T> {
     return Either.ok()
   }
 
-  private compareWithArray<U extends Array<any>>(expected: U): MaybeOk {
+  private compareWithArray<U extends Array<never>>(expected: U): MaybeOk {
     if (typeof this.value !== "object" || this.value === null || !Array.isArray(this.value))
       return Either.right(new Error("Value is not an array"))
     else if (this.value.length !== expected.length)
@@ -143,21 +141,21 @@ export class TestBuilder<T> {
     const actual = TestBuilder.determineTypeOf(this.value)
 
     return this.assert(
-      _ => actual === expected,
+      () => actual === expected,
       new Error(`Type mismatch ${this.difference(actual, expected)}`)
     )
   }
 
   toBeInstanceOf(other: Function): this {
-    return this.assert(_ => this.value instanceof other, new Error("Instance mismatch"))
+    return this.assert(() => this.value instanceof other, new Error("Instance mismatch"))
   }
 
   toBeNull(): this {
-    return this.assert(_ => this.value === null, new Error("Value is not null"))
+    return this.assert(() => this.value === null, new Error("Value is not null"))
   }
 
   toBeArrayOfLength(length: number): this {
-    return this.to(_ => {
+    return this.to(() => {
       if (!Array.isArray(this.value))
         return Either.error("Value is not an array")
 
@@ -169,7 +167,7 @@ export class TestBuilder<T> {
   }
 
   toBeOption(isSome: boolean): this {
-    return this.to(_ => {
+    return this.to(() => {
       if (!(this.value instanceof Option))
         return Either.error("Value is not an instance of Option")
 
@@ -188,7 +186,7 @@ export class TestBuilder<T> {
   }
 
   toMatchPartial(partial: Partial<T>): this {
-    return this.to(_ => {
+    return this.to(() => {
       if (typeof this.value !== "object" || this.value === null)
         return Either.error(`Value is not an object ${this.difference(TestBuilder.determineTypeOf(this.value), "object")}`)
 
@@ -214,17 +212,17 @@ export class TestBuilder<T> {
     })
   }
 
-  map<U>(callback: Util.ThunkWithParam<T, U>): TestBuilder<U> {
+  map<U>(callback: ThunkWithParam<T, U>): TestBuilder<U> {
     // let next = new TestBuilder(callback(this.value))
 
     // next.chain = this.chain
 
     // TODO: Finish implementing.
-    Util.unimplemented()
+    unimplemented()
   }
 
   assert(
-    condition: Util.ThunkWithParam<this, boolean>,
+    condition: ThunkWithParam<this, boolean>,
     error: Error = new Error("Unmet condition")
   ): this {
     return this.to(() => Either.if(condition(this), error))
@@ -232,7 +230,7 @@ export class TestBuilder<T> {
 
   not(matcher: Matcher<T>): this {
     // TODO: Implement.
-    Util.unimplemented()
+    unimplemented()
   }
 
   to(functor: Matcher<T>): this {
@@ -299,7 +297,7 @@ export class TestSuite {
 
   // REVIEW: Using `any`.
   // CONSIDER: Restricting target's name to `keyof typeof T`.
-  test(target: string | Function, callback: Util.Thunk<TestBuilder<any> | TestBuilder<any>[]>): this {
+  test(target: string | Function, callback: Thunk<TestBuilder<any> | TestBuilder<any>[]>): this {
     let name = target instanceof Function ? target.name : target
 
     if (name === this.name)
@@ -341,7 +339,7 @@ export class TestSuite {
     console.log(this.name, coverageColor(`(${coverageRatio}% coverage)`))
 
     let overallRuntime = 0
-    let failingTests: [string, string][] = []
+    const failingTests: [string, string][] = []
     const sortedTests = [...this.tests].sort((a, b) => a.name > b.name ? 1 : -1)
 
     for (const todoName of this.todos)

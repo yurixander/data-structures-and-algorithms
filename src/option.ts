@@ -1,4 +1,4 @@
-import { Util } from "./util.js"
+import { Thunk, ThunkWithParam } from "./util"
 
 type Falsy = undefined | null | false
 
@@ -50,15 +50,15 @@ export class Option<T> {
     return this.value === null ? defaultValue : this.value
   }
 
-  unwrapOr(callback: Util.Thunk<T>): T {
+  unwrapOr(callback: Thunk<T>): T {
     return this.value === null ? callback() : this.value
   }
 
-  map<U>(callback: Util.ThunkWithParam<T, U>): Option<U> {
+  map<U>(callback: ThunkWithParam<T, U>): Option<U> {
     return this.value === null ? Option.none() : Option.some(callback(this.value))
   }
 
-  bind<U>(callback: Util.ThunkWithParam<T, Option<U>>): Option<U> {
+  bind<U>(callback: ThunkWithParam<T, Option<U>>): Option<U> {
     // TODO: Can't we base/abstract this off `map`?
     return this.value === null ? Option.none() : callback(this.value)
   }

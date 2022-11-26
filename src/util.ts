@@ -1,104 +1,104 @@
 import { Option } from "./option.js"
 
-export namespace Util {
-  export type Pair<T, U> = [first: T, second: U]
+export type Pair<T, U> = [first: T, second: U]
 
-  export type Thunk<T = void> = () => T
+export type Thunk<T = void> = () => T
 
-  export type ThunkWithParam<T, U = void> = (_: T) => U
+export type ThunkWithParam<T, U = void> = (_: T) => U
 
-  // TODO: Create `Predicate` type: same as ThunkWithParam, but returns boolean and input value is deep-readonly.
+export type IndexableObject = { [propertyName: string]: unknown }
 
-  // export interface Ordered {
-  //   lessThan()
-  // }
+// TODO: Create `Predicate` type: same as ThunkWithParam, but returns boolean and input value is deep-readonly.
 
-  export function validateIndex(index: number, length: number): boolean {
-    return Number.isInteger(index)
-      && index >= 0
-      && index <= length - 1
-  }
+// export interface Ordered {
+//   lessThan()
+// }
 
-  export function forceValidateIndex(index: number, length: number): void | never {
-    if (!Util.validateIndex(index, length))
-      throw new Error(`Index is invalid: ${index}; expected to be an integer, >=0 and <=${length - 1}`)
-  }
+export function validateIndex(index: number, length: number): boolean {
+  return Number.isInteger(index)
+    && index >= 0
+    && index <= length - 1
+}
 
-  export function cyclicRangeClamp(current: number, offset: number, max: number, min: number = 0): number {
-    return (current - min + (offset % max) + max) % max + min
-  }
+export function forceValidateIndex(index: number, length: number): void | never {
+  if (!validateIndex(index, length))
+    throw new Error(`Index is invalid: ${index}; expected to be an integer, >=0 and <=${length - 1}`)
+}
 
-  export function assignOrOverrideOptions<T>(partialOptions: Partial<T>, defaults: T): T {
-    if (partialOptions === defaults)
-      return defaults
+export function cyclicRangeClamp(current: number, offset: number, max: number, min = 0): number {
+  return (current - min + (offset % max) + max) % max + min
+}
 
-    return { ...defaults, ...partialOptions }
-  }
+export function assignOrOverrideOptions<T>(partialOptions: Partial<T>, defaults: T): T {
+  if (partialOptions === defaults)
+    return defaults
 
-  export function repeat(times: number, thunk: Thunk): void {
-    for (let i = 0; i < times; i++)
-      thunk()
-  }
+  return { ...defaults, ...partialOptions }
+}
 
-  export function overrideDelete(): never {
-    throw new Error("This function has been deleted")
-  }
+export function repeat(times: number, thunk: Thunk): void {
+  for (let i = 0; i < times; i++)
+    thunk()
+}
 
-  export function unimplemented(): never {
-    throw new Error("Not yet implemented")
-  }
+export function overrideDelete(): never {
+  throw new Error("This function has been deleted")
+}
 
-  export function zip<A, B>(a: A[], b: B[]): Iterable<[Option<A>, Option<B>]> {
-    let result = new Array(Math.max(a.length, b.length))
+export function unimplemented(): never {
+  throw new Error("Not yet implemented")
+}
 
-    for (let i = 0; i < result.length; i++)
-      result[i] = [Option.try(a.at(i)), Option.try(b.at(i))]
+export function zip<A, B>(a: A[], b: B[]): Iterable<[Option<A>, Option<B>]> {
+  const result = new Array(Math.max(a.length, b.length))
 
-    return result
-  }
+  for (let i = 0; i < result.length; i++)
+    result[i] = [Option.try(a.at(i)), Option.try(b.at(i))]
 
-  export function tryZip<A, B>(a: A[], b: B[]): Option<Iterable<[A, B]>> {
-    if (a.length !== b.length)
+  return result
+}
+
+export function tryZip<A, B>(a: A[], b: B[]): Option<Iterable<[A, B]>> {
+  if (a.length !== b.length)
+    return Option.none()
+
+  const result = new Array(Math.max(a.length, b.length))
+
+  for (let i = 0; i < result.length; i++)
+    result[i] = [a[i], b[i]]
+
+  return Option.some(result)
+}
+
+export function tryExtractDeepProperty(unsafeObject: IndexableObject, propertyChain: string[]): Option<unknown> {
+  if (propertyChain.length === 0)
+    return Option.none()
+
+  let cursor = unsafeObject
+  let position = 0
+
+  while (position !== propertyChain.length) {
+    const next = cursor[propertyChain[position]]
+
+    if (next === undefined)
       return Option.none()
 
-    let result = new Array(Math.max(a.length, b.length))
-
-    for (let i = 0; i < result.length; i++)
-      result[i] = [a[i], b[i]]
-
-    return Option.some(result)
+    cursor = next
+    position++
   }
 
-  export function tryExtractDeepProperty(unsafeObject: any, propertyChain: string[]): Option<unknown> {
-    if (propertyChain.length === 0)
-      return unsafeObject
+  return Option.some(cursor)
+}
 
-    let cursor = unsafeObject
-    let position = 0
+export function range(from: number, to: number): number[] {
+  if (from > to)
+    throw new Error("Range bounds are invalid")
 
-    while (position !== propertyChain.length) {
-      const next = cursor[propertyChain[position]]
+  const length = to - from
+  const result = new Array(length + 1)
 
-      if (next === undefined)
-        return Option.none()
+  for (let i = 0; i <= length; i++)
+    result[i] = from + i
 
-      cursor = next
-      position++
-    }
-
-    return Option.some(cursor)
-  }
-
-  export function range(from: number, to: number): number[] {
-    if (from > to)
-      throw new Error("Range bounds are invalid")
-
-    const length = to - from
-    let result = new Array(length + 1)
-
-    for (let i = 0; i <= length; i++)
-      result[i] = from + i
-
-    return result
-  }
+  return result
 }

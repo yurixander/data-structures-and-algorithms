@@ -1,158 +1,156 @@
-import { Math2 } from "./math.js"
-import { Util } from "./util.js"
+import { factorialRecursive } from "./math.js"
+import { Thunk, assignOrOverrideOptions, repeat } from "./util.js"
 
-export namespace Performance {
-  /**
+/**
    * An array of 3 elements representing the best case (Big-Ω) time, average time (Big-θ),
    * and worst case (Big-O) time measurements of a runtime complexity performance test.
    */
-  export type RuntimeComplexityTrio = [RuntimeComplexity, RuntimeComplexity, RuntimeComplexity]
+export type RuntimeComplexityTrio = [RuntimeComplexity, RuntimeComplexity, RuntimeComplexity]
 
-  export type RuntimeComplexityMeasurementOptions = {
-    approximateTimePerItem: number,
-    errorMarginPercentage: number,
-    sampleSize: number
-  }
+export type RuntimeComplexityMeasurementOptions = {
+  approximateTimePerItem: number,
+  errorMarginPercentage: number,
+  sampleSize: number
+}
 
-  const defaultRuntimeComplexityMeasurementOptions: RuntimeComplexityMeasurementOptions = {
-    approximateTimePerItem: 1000,
-    errorMarginPercentage: 10,
-    sampleSize: 100
-  }
+const defaultRuntimeComplexityMeasurementOptions: RuntimeComplexityMeasurementOptions = {
+  approximateTimePerItem: 1000,
+  errorMarginPercentage: 10,
+  sampleSize: 100
+}
 
-  export enum RuntimeComplexity {
-    /**
-     * O(1).
-     */
-    Constant,
-
-    /**
-     * O(log(n)).
-     */
-    Logarithmic,
-
-    /**
-     * O(√n).
-     */
-    SquareRoot,
-
-    /**
-     * O(n).
-     */
-    Linear,
-
-    /**
-     * O(n^x).
-     */
-    Exponential,
-
-    /**
-     * O(n!).
-     */
-    Factorial,
-
-    /**
-     * O(∞).
-     */
-    Infinity
-  }
-
-  export function measure(thunk: Util.Thunk): number {
-    const start = performance.now()
-
-    thunk()
-
-    return performance.now() - start
-  }
-
-  function isWithinErrorMargins(actual: number, expected: number, errorMarginPercentage: number): boolean {
-    if (actual === expected)
-      return true
-
-    const errorMargin = expected * (errorMarginPercentage / 100)
-    const min = expected - errorMargin
-    const max = expected + errorMargin
-
-    return actual >= min && actual <= max
-  }
-
-  export function runtimeComplexityOf(
-    approximateTime: number,
-    errorMarginPercentage: number,
-    actualTime: number
-  ): RuntimeComplexity {
-    // Safe-guard against negative values.
-    approximateTime = Math.abs(approximateTime)
-
-    // FIXME: Hard-coded?
-    const constantTime = 3
-
-    if (actualTime <= constantTime)
-      return RuntimeComplexity.Constant
-
-    const linearTime = approximateTime
-    const logarithmicTime: Util.Thunk<number> = () => Math.log(approximateTime)
-    const squareRootTime: Util.Thunk<number> = () => Math.sqrt(approximateTime)
-    const exponentialTime: Util.Thunk<number> = () => approximateTime ** 2
-
-    // NOTE: Since the approximate time will always be positive, this
-    // should never fail. Therefore, we can unwrap safely.
-    const factorialTime: Util.Thunk<number> = () => Math2.factorialRecursive(approximateTime).left()
-
-    if (isWithinErrorMargins(actualTime, linearTime, errorMarginPercentage))
-      return RuntimeComplexity.Constant
-    else if (isWithinErrorMargins(actualTime, logarithmicTime(), errorMarginPercentage))
-      return RuntimeComplexity.Logarithmic
-    else if (isWithinErrorMargins(actualTime, squareRootTime(), errorMarginPercentage))
-      return RuntimeComplexity.SquareRoot
-    else if (isWithinErrorMargins(actualTime, exponentialTime(), errorMarginPercentage))
-      return RuntimeComplexity.Exponential
-    else if (isWithinErrorMargins(actualTime, factorialTime(), errorMarginPercentage))
-      return RuntimeComplexity.Factorial
-
-    return RuntimeComplexity.Infinity
-  }
+export enum RuntimeComplexity {
+  /**
+   * O(1).
+   */
+  Constant,
 
   /**
-   * Approximate the runtime complexity of a given operation.
+   * O(log(n)).
    */
-  export function measureRuntimeComplexity(
-    thunk: Util.Thunk,
-    n: number,
-    partialOptions: Partial<RuntimeComplexityMeasurementOptions> = defaultRuntimeComplexityMeasurementOptions
-  ): RuntimeComplexityTrio {
-    const options = Util.assignOrOverrideOptions(partialOptions, defaultRuntimeComplexityMeasurementOptions)
+  Logarithmic,
 
-    if (options.sampleSize < 1)
-      throw new Error("Sample size must be 1 or greater")
+  /**
+   * O(√n).
+   */
+  SquareRoot,
 
-    let fastestTime = Number.POSITIVE_INFINITY
-    let slowestTime = Number.NEGATIVE_INFINITY
-    let sampleTimeSum = 0
-    let sampleTimeCount = 0
+  /**
+   * O(n).
+   */
+  Linear,
 
-    Util.repeat(options.sampleSize, () => {
-      const sampleMeasurement = measure(thunk)
+  /**
+   * O(n^x).
+   */
+  Exponential,
 
-      if (sampleMeasurement < fastestTime)
-        fastestTime = sampleMeasurement
+  /**
+   * O(n!).
+   */
+  Factorial,
 
-      if (sampleMeasurement > slowestTime)
-        slowestTime = sampleMeasurement
+  /**
+   * O(∞).
+   */
+  Infinity
+}
 
-      sampleTimeSum += sampleMeasurement
-      sampleTimeCount++
-    })
+export function measure(thunk: Thunk): number {
+  const start = performance.now()
 
-    // NOTE: Since the count is always guaranteed to be >1, there should never
-    // be a division by zero edge case.
-    const averageTime = sampleTimeSum / sampleTimeCount
+  thunk()
 
-    const approximateTime = n * options.approximateTimePerItem
+  return performance.now() - start
+}
 
-    // TODO: Casting/qualifying. Any way to avoid that?
-    return [fastestTime, averageTime, slowestTime].map(actualTime =>
-      runtimeComplexityOf(approximateTime, options.errorMarginPercentage, actualTime)
-    ) as RuntimeComplexityTrio
-  }
+function isWithinErrorMargins(actual: number, expected: number, errorMarginPercentage: number): boolean {
+  if (actual === expected)
+    return true
+
+  const errorMargin = expected * (errorMarginPercentage / 100)
+  const min = expected - errorMargin
+  const max = expected + errorMargin
+
+  return actual >= min && actual <= max
+}
+
+export function runtimeComplexityOf(
+  approximateTime: number,
+  errorMarginPercentage: number,
+  actualTime: number
+): RuntimeComplexity {
+  // Safe-guard against negative values.
+  approximateTime = Math.abs(approximateTime)
+
+  // FIXME: Hard-coded?
+  const constantTime = 3
+
+  if (actualTime <= constantTime)
+    return RuntimeComplexity.Constant
+
+  const linearTime = approximateTime
+  const logarithmicTime: Thunk<number> = () => Math.log(approximateTime)
+  const squareRootTime: Thunk<number> = () => Math.sqrt(approximateTime)
+  const exponentialTime: Thunk<number> = () => approximateTime ** 2
+
+  // NOTE: Since the approximate time will always be positive, this
+  // should never fail. Therefore, we can unwrap safely.
+  const factorialTime: Thunk<number> = () => factorialRecursive(approximateTime).left()
+
+  if (isWithinErrorMargins(actualTime, linearTime, errorMarginPercentage))
+    return RuntimeComplexity.Constant
+  else if (isWithinErrorMargins(actualTime, logarithmicTime(), errorMarginPercentage))
+    return RuntimeComplexity.Logarithmic
+  else if (isWithinErrorMargins(actualTime, squareRootTime(), errorMarginPercentage))
+    return RuntimeComplexity.SquareRoot
+  else if (isWithinErrorMargins(actualTime, exponentialTime(), errorMarginPercentage))
+    return RuntimeComplexity.Exponential
+  else if (isWithinErrorMargins(actualTime, factorialTime(), errorMarginPercentage))
+    return RuntimeComplexity.Factorial
+
+  return RuntimeComplexity.Infinity
+}
+
+/**
+ * Approximate the runtime complexity of a given operation.
+ */
+export function measureRuntimeComplexity(
+  thunk: Thunk,
+  n: number,
+  partialOptions: Partial<RuntimeComplexityMeasurementOptions> = defaultRuntimeComplexityMeasurementOptions
+): RuntimeComplexityTrio {
+  const options = assignOrOverrideOptions(partialOptions, defaultRuntimeComplexityMeasurementOptions)
+
+  if (options.sampleSize < 1)
+    throw new Error("Sample size must be 1 or greater")
+
+  let fastestTime = Number.POSITIVE_INFINITY
+  let slowestTime = Number.NEGATIVE_INFINITY
+  let sampleTimeSum = 0
+  let sampleTimeCount = 0
+
+  repeat(options.sampleSize, () => {
+    const sampleMeasurement = measure(thunk)
+
+    if (sampleMeasurement < fastestTime)
+      fastestTime = sampleMeasurement
+
+    if (sampleMeasurement > slowestTime)
+      slowestTime = sampleMeasurement
+
+    sampleTimeSum += sampleMeasurement
+    sampleTimeCount++
+  })
+
+  // NOTE: Since the count is always guaranteed to be >1, there should never
+  // be a division by zero edge case.
+  const averageTime = sampleTimeSum / sampleTimeCount
+
+  const approximateTime = n * options.approximateTimePerItem
+
+  // TODO: Casting/qualifying. Any way to avoid that?
+  return [fastestTime, averageTime, slowestTime].map(actualTime =>
+    runtimeComplexityOf(approximateTime, options.errorMarginPercentage, actualTime)
+  ) as RuntimeComplexityTrio
 }

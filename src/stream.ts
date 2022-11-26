@@ -1,5 +1,5 @@
 import { Option } from "./option.js"
-import { Util } from "./util.js"
+import { Thunk } from "./util.js"
 
 export class Stream<T> {
   static fibonacci = (() => {
@@ -17,7 +17,7 @@ export class Stream<T> {
     return new Stream(number, Option.some(() => Stream.from(number + 1)))
   }
 
-  static fromThunk<T>(thunk: Util.Thunk<T>): Stream<T> {
+  static fromThunk<T>(thunk: Thunk<T>): Stream<T> {
     return new Stream(thunk(), Option.some(() => Stream.fromThunk(thunk)))
   }
 
@@ -32,7 +32,7 @@ export class Stream<T> {
   constructor(
     // TODO: First value must be lazy-evaluated, otherwise the first value will be evaluated when the stream is created. Alternatively, is there a way to specify when to use laziness?
     public readonly value: T,
-    public readonly next: Option<Util.Thunk<Stream<T>>> = Option.none()
+    public readonly next: Option<Thunk<Stream<T>>> = Option.none()
   ) {
     //
   }
@@ -40,10 +40,10 @@ export class Stream<T> {
   takeImperative(amount: number): T[] {
     let count = 0
     let bufferOpt: Option<Stream<T>> = Option.some(this)
-    let result: T[] = []
+    const result: T[] = []
 
     while (count !== amount && bufferOpt.isSome()) {
-      let buffer = bufferOpt.unwrap()
+      const buffer = bufferOpt.unwrap()
 
       result.push(buffer.value)
       bufferOpt = Option.some(buffer.next.unwrap()())
@@ -57,7 +57,7 @@ export class Stream<T> {
   take(amount: number): Stream<T> {
     const next = this.next.isSome() && amount > 1
       ? Option.some(() => this.next.unwrap()().take(amount - 1))
-      : Option.none<Util.Thunk<Stream<T>>>()
+      : Option.none<Thunk<Stream<T>>>()
 
     return new Stream(this.value, next)
   }
@@ -70,11 +70,11 @@ export class Stream<T> {
   }
 
   toArrayImperative(): T[] {
-    let result = [this.value]
+    const result = [this.value]
     let nodeOpt: Stream<T> = this
 
     while (nodeOpt.next.isSome()) {
-      let node = nodeOpt.next.unwrap()()
+      const node = nodeOpt.next.unwrap()()
 
       result.push(node.value)
       nodeOpt = node

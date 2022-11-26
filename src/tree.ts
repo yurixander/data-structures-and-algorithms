@@ -1,4 +1,4 @@
-import { Util } from "./util.js"
+import { ThunkWithParam } from "./util"
 
 export class Tree<T> {
   constructor(public value: T, public children: Tree<T>[] = []) {
@@ -6,13 +6,13 @@ export class Tree<T> {
   }
 
   *[Symbol.iterator]() {
-    let nodes = this.collectIterative()
+    const nodes = this.collectIterative()
 
     for (const node of nodes)
       yield node
   }
 
-  traverse(callback: Util.ThunkWithParam<Tree<T>>): void {
+  traverse(callback: ThunkWithParam<Tree<T>>): void {
     this.collectIterative().forEach(node => callback(node))
   }
 
@@ -21,8 +21,8 @@ export class Tree<T> {
   }
 
   collectIterative(): Tree<T>[] {
-    let queue: Tree<T>[] = [this]
-    let nodes: Tree<T>[] = []
+    const queue: Tree<T>[] = [this]
+    const nodes: Tree<T>[] = []
 
     while (queue.length > 0) {
       const node = queue.pop()!
@@ -35,7 +35,7 @@ export class Tree<T> {
   }
 
   collectRecursive(): Tree<T>[] {
-    let result: Tree<T>[] = []
+    const result: Tree<T>[] = []
 
     const go = (node: Tree<T>) => {
       result.push(node)

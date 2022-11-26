@@ -1,48 +1,46 @@
 import { Either, Result } from "./either.js"
 
-export namespace Math2 {
-  export function factorialRecursiveNonTail(number: number): Result<number> {
-    if (number < 0)
-      return Either.right(new Error("Factorial of negative numbers is undefined"))
-    else if (number === 0)
-      return Either.left(1)
+export function factorialRecursiveNonTail(number: number): Result<number> {
+  if (number < 0)
+    return Either.right(new Error("Factorial of negative numbers is undefined"))
+  else if (number === 0)
+    return Either.left(1)
 
-    return factorialRecursiveNonTail(number - 1)
-      .mapLeft(result => number * result)
+  return factorialRecursiveNonTail(number - 1)
+    .mapLeft(result => number * result)
+}
+
+export function factorialRecursive(number: number): Result<number> {
+  if (number < 0)
+    return Either.right(new Error("Factorial of negative numbers is undefined"))
+
+  let product = 1
+
+  // BUG: Still overflowing the stack for some reason.
+  const go = (number: number): void => {
+    if (number === 0)
+      return
+
+    product *= number
+
+    return go(number - 1)
   }
 
-  export function factorialRecursive(number: number): Result<number> {
-    if (number < 0)
-      return Either.right(new Error("Factorial of negative numbers is undefined"))
+  go(number)
 
-    let product = 1
+  return Either.left(product)
+}
 
-    // BUG: Still overflowing the stack for some reason.
-    const go = (number: number): void => {
-      if (number === 0)
-        return
+export function factorialIterative(number: number): Result<number> {
+  if (number < 0)
+    return Either.right(new Error("Factorial of negative numbers is undefined"))
 
-      product *= number
+  let product = 1
 
-      return go(number - 1)
-    }
-
-    go(number)
-
-    return Either.left(product)
+  while (number !== 0) {
+    product *= number
+    number--
   }
 
-  export function factorialIterative(number: number): Result<number> {
-    if (number < 0)
-      return Either.right(new Error("Factorial of negative numbers is undefined"))
-
-    let product = 1
-
-    while (number !== 0) {
-      product *= number
-      number--
-    }
-
-    return Either.left(product)
-  }
+  return Either.left(product)
 }

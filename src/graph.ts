@@ -1,4 +1,4 @@
-import { Util } from "./util.js"
+import { ThunkWithParam } from "./util"
 
 export enum GraphProperty {
   Cyclic,
@@ -27,8 +27,8 @@ export class Graph<T> {
   }
 
   determineProperties(): Set<GraphProperty> {
-    let properties = new Set<GraphProperty>()
-    let neighborsSeen = new Set<Graph<T>>()
+    const properties = new Set<GraphProperty>()
+    const neighborsSeen = new Set<Graph<T>>()
 
     this.traverse(node => {
       if (neighborsSeen.has(node))
@@ -40,12 +40,12 @@ export class Graph<T> {
     return properties
   }
 
-  private traverseDepthFirst(callback: Util.ThunkWithParam<Graph<T>>): void {
-    let queue: Graph<T>[] = [this]
-    let nodesVisited = new Set<Graph<T>>()
+  private traverseDepthFirst(callback: ThunkWithParam<Graph<T>>): void {
+    const queue: Graph<T>[] = [this]
+    const nodesVisited = new Set<Graph<T>>()
 
     while (queue.length > 0) {
-      let node = queue.pop()!
+      const node = queue.pop()!
 
       if (!nodesVisited.has(node)) {
         callback(node)
@@ -56,7 +56,7 @@ export class Graph<T> {
   }
 
   traverse(
-    callback: Util.ThunkWithParam<Graph<T>>,
+    callback: ThunkWithParam<Graph<T>>,
     algorithm: GraphTraversalAlgorithm = GraphTraversalAlgorithm.DepthFirstSearch
   ): void {
     switch (algorithm) {

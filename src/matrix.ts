@@ -1,6 +1,6 @@
 import { Either, Result } from "./either.js"
 import { Option } from "./option.js"
-import { Util } from "./util.js"
+import { validateIndex, cyclicRangeClamp } from "./util.js"
 
 export type MatrixForEachCallback<T, U = void> = (value: T, row: number, column: number) => U
 
@@ -45,7 +45,7 @@ export class Matrix<T> {
   }
 
   set(row: number, column: number, value: T): boolean {
-    if (!Util.validateIndex(row, this.rows) || !Util.validateIndex(column, this.columns))
+    if (!validateIndex(row, this.rows) || !validateIndex(column, this.columns))
       return false
 
     if (this.values[row][column] === undefined)
@@ -65,14 +65,14 @@ export class Matrix<T> {
     return this.size_ === this.capacity_
   }
 
-  forEach(callback: MatrixForEachCallback<T>, skipEmpty: boolean = true): void {
+  forEach(callback: MatrixForEachCallback<T>, skipEmpty = true): void {
     for (let rowIndex = 0; rowIndex < this.rows; rowIndex++)
       for (let columnIndex = 0; columnIndex < this.columns; columnIndex++)
         if (!skipEmpty || this.values[rowIndex][columnIndex] !== undefined)
           callback(this.values[rowIndex][columnIndex], rowIndex, columnIndex)
   }
 
-  fill(value: T, replace: boolean = false): this {
+  fill(value: T, replace = false): this {
     // TODO: Everything should be functional.
 
     this.forEach((_, row, column) => {
@@ -86,7 +86,7 @@ export class Matrix<T> {
   }
 
   map<U>(callback: MatrixForEachCallback<T, U>): Matrix<U> {
-    let result = new Matrix<U>(this.rows, this.columns)
+    const result = new Matrix<U>(this.rows, this.columns)
 
     this.forEach((value, row, column) => result.values[row][column] = callback(value, row, column))
 
@@ -102,8 +102,8 @@ export class Matrix<T> {
     if (this.isFull() || !this.set(this.rowPointer, this.columnPointer, value))
       return false
 
-    this.rowPointer = Util.cyclicRangeClamp(this.rowPointer, 1, this.rows)
-    this.columnPointer = Util.cyclicRangeClamp(this.columnPointer, 1, this.columns)
+    this.rowPointer = cyclicRangeClamp(this.rowPointer, 1, this.rows)
+    this.columnPointer = cyclicRangeClamp(this.columnPointer, 1, this.columns)
 
     return true
   }

@@ -1,5 +1,3 @@
-import { SinglyLinkedList } from "./singlyLinkedList.js"
-
 export interface Monoid<T> {
   identity: T
 
@@ -7,7 +5,7 @@ export interface Monoid<T> {
 }
 
 export class AdditiveMonoid implements Monoid<number> {
-  identity: number = 0
+  identity = 0
 
   apply(a: number, b: number): number {
     return a + b
@@ -15,7 +13,7 @@ export class AdditiveMonoid implements Monoid<number> {
 }
 
 export class MultiplicativeMonoid implements Monoid<number> {
-  identity: number = 1
+  identity = 1
 
   apply(a: number, b: number): number {
     return a * b
@@ -23,7 +21,7 @@ export class MultiplicativeMonoid implements Monoid<number> {
 }
 
 export class StringMonoid implements Monoid<string> {
-  identity: string = ""
+  identity = ""
 
   apply(a: string, b: string): string {
     return a + b

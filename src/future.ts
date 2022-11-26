@@ -1,4 +1,4 @@
-import { Util } from "./util.js"
+import { Thunk } from "./util"
 
 export enum FutureState {
   Unexecuted,
@@ -8,13 +8,13 @@ export enum FutureState {
 }
 
 export class Future<T> {
-  static unit<T>(thunk: Util.Thunk<T>): Future<T> {
+  static unit<T>(thunk: Thunk<T>): Future<T> {
     return new Future(thunk)
   }
 
   private state_: FutureState
 
-  constructor(public thunk: Util.Thunk<T>) {
+  constructor(public thunk: Thunk<T>) {
     this.state_ = FutureState.Unexecuted
   }
 
@@ -30,7 +30,7 @@ export class Future<T> {
         await this.thunk()
       }
       catch {
-
+        // TODO: Continue implementation.
       }
 
       this.state_ = FutureState.Completed

@@ -1,5 +1,5 @@
 import { Option } from "./option.js"
-import { Util } from "./util.js"
+import { ThunkWithParam } from "./util.js"
 
 export enum TreeTraversalOrder {
   DepthFirstSearch,
@@ -24,7 +24,7 @@ export class BinaryTree<T> {
 
   *[Symbol.iterator]() {
     // OPTIMIZE: Collect as needed, recall using generator.
-    let nodes = this.collectIterative()
+    const nodes = this.collectIterative()
 
     for (const node of nodes)
       yield node
@@ -41,7 +41,7 @@ export class BinaryTree<T> {
     return true
   }
 
-  traverse(callback: Util.ThunkWithParam<BinaryTree<T>>): void {
+  traverse(callback: ThunkWithParam<BinaryTree<T>>): void {
     this.collectIterative().forEach(node => callback(node))
   }
 
@@ -50,8 +50,8 @@ export class BinaryTree<T> {
   }
 
   collectIterative(): BinaryTree<T>[] {
-    let queue: BinaryTree<T>[] = [this]
-    let nodes: BinaryTree<T>[] = []
+    const queue: BinaryTree<T>[] = [this]
+    const nodes: BinaryTree<T>[] = []
 
     while (queue.length > 0) {
       const node = queue.pop()!
@@ -69,7 +69,7 @@ export class BinaryTree<T> {
   }
 
   collectRecursive(): BinaryTree<T>[] {
-    let result: BinaryTree<T>[] = []
+    const result: BinaryTree<T>[] = []
 
     const go = (node: BinaryTree<T>): void => {
       result.push(node)

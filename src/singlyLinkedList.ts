@@ -1,5 +1,5 @@
 import { Option } from "./option.js"
-import { Util } from "./util.js"
+import { ThunkWithParam, validateIndex } from "./util.js"
 
 export class SinglyLinkedList<T> {
   constructor(
@@ -11,7 +11,7 @@ export class SinglyLinkedList<T> {
 
   *[Symbol.iterator]() {
     // OPTIMIZE: Collect as needed (recall it's a generator).
-    let nodes = this.collectIterative()
+    const nodes = this.collectIterative()
 
     for (const node of nodes)
       yield node
@@ -21,11 +21,11 @@ export class SinglyLinkedList<T> {
     // REVISE: Cleanup returning of the new head.
 
     let bufferOpt = Option.some<SinglyLinkedList<T>>(this)
-    let previous = Option.none<SinglyLinkedList<T>>()
+    const previous = Option.none<SinglyLinkedList<T>>()
     let newHead: SinglyLinkedList<T>
 
     while (bufferOpt.isSome()) {
-      let buffer = bufferOpt.unwrap()
+      const buffer = bufferOpt.unwrap()
       const next = buffer.next;
 
       [buffer.next, bufferOpt] = [previous, next]
@@ -37,12 +37,12 @@ export class SinglyLinkedList<T> {
     return newHead!
   }
 
-  traverse(callback: Util.ThunkWithParam<SinglyLinkedList<T>>): void {
+  traverse(callback: ThunkWithParam<SinglyLinkedList<T>>): void {
     this.collectIterative().forEach(node => callback(node))
   }
 
-  find(predicate: Util.ThunkWithParam<SinglyLinkedList<T>, boolean>): Option<SinglyLinkedList<T>> {
-    let list = this.collectIterative()
+  find(predicate: ThunkWithParam<SinglyLinkedList<T>, boolean>): Option<SinglyLinkedList<T>> {
+    const list = this.collectIterative()
 
     for (const node of list)
       if (predicate(node))
@@ -51,7 +51,7 @@ export class SinglyLinkedList<T> {
     return Option.none()
   }
 
-  filter(predicate: Util.ThunkWithParam<SinglyLinkedList<T>, boolean>): SinglyLinkedList<T>[] {
+  filter(predicate: ThunkWithParam<SinglyLinkedList<T>, boolean>): SinglyLinkedList<T>[] {
     return this.collectIterative().filter(node => predicate(node))
   }
 
@@ -60,7 +60,7 @@ export class SinglyLinkedList<T> {
   }
 
   findTail(): SinglyLinkedList<T> {
-    let list = this.collectIterative()
+    const list = this.collectIterative()
 
     return list[list.length - 1]
   }
@@ -74,7 +74,7 @@ export class SinglyLinkedList<T> {
   deleteNthNode(position: number): boolean {
     const list = this.collectIterative()
 
-    if (!Util.validateIndex(position, list.length))
+    if (!validateIndex(position, list.length))
       return false
 
     // TODO: Continue implementation.
@@ -83,7 +83,7 @@ export class SinglyLinkedList<T> {
   }
 
   collectIterative(): SinglyLinkedList<T>[] {
-    let list: SinglyLinkedList<T>[] = []
+    const list: SinglyLinkedList<T>[] = []
     let buffer: Option<SinglyLinkedList<T>> = Option.some(this)
 
     while (buffer.isSome()) {
@@ -103,7 +103,7 @@ export class SinglyLinkedList<T> {
   }
 
   insertAfter(node: SinglyLinkedList<T>): void {
-    let next = this.next
+    const next = this.next
 
     this.next = Option.some(node)
     node.next = next

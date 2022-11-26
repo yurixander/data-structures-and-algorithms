@@ -1,6 +1,6 @@
 import { Either, Result } from "./either.js"
 import { Option } from "./option.js"
-import { Util } from "./util.js"
+import { unimplemented } from "./util.js"
 
 export class Interval {
   static unit(from: number, to: number): Result<Interval> {
@@ -33,12 +33,12 @@ export class Interval {
       return Option.none()
 
     // TODO: Implement.
-    Util.unimplemented()
+    unimplemented()
   }
 
   intersection(other: Interval): Option<Interval> {
     // TODO: Implement.
-    Util.unimplemented()
+    unimplemented()
   }
 
   contains(other: Interval): boolean {
