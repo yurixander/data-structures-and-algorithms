@@ -1,5 +1,5 @@
-import { Option } from "./option.js"
-import { ThunkWithParam, validateIndex } from "./util.js"
+import {Option} from "./option.js"
+import {ThunkWithParam, validateIndex} from "./util.js"
 
 export class SinglyLinkedList<T> {
   constructor(

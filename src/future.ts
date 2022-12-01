@@ -1,4 +1,4 @@
-import { Thunk } from "./util"
+import {Thunk} from "./util"
 
 export enum FutureState {
   Unexecuted,

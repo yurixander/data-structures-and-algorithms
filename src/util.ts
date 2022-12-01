@@ -1,4 +1,4 @@
-import { Option } from "./option.js"
+import {Option} from "./option.js"
 
 export type Pair<T, U> = [first: T, second: U]
 
@@ -6,7 +6,7 @@ export type Thunk<T = void> = () => T
 
 export type ThunkWithParam<T, U = void> = (_: T) => U
 
-export type IndexableObject = { [propertyName: string]: unknown }
+export type IndexableObject = {[propertyName: string]: unknown}
 
 // TODO: Create `Predicate` type: same as ThunkWithParam, but returns boolean and input value is deep-readonly.
 
@@ -33,7 +33,7 @@ export function assignOrOverrideOptions<T>(partialOptions: Partial<T>, defaults:
   if (partialOptions === defaults)
     return defaults
 
-  return { ...defaults, ...partialOptions }
+  return {...defaults, ...partialOptions}
 }
 
 export function repeat(times: number, thunk: Thunk): void {
@@ -70,25 +70,26 @@ export function tryZip<A, B>(a: A[], b: B[]): Option<Iterable<[A, B]>> {
   return Option.some(result)
 }
 
-export function tryExtractDeepProperty(unsafeObject: IndexableObject, propertyChain: string[]): Option<unknown> {
-  if (propertyChain.length === 0)
-    return Option.none()
+// TODO: Fix error.
+// export function tryExtractDeepProperty(unsafeObject: IndexableObject, propertyChain: string[]): Option<unknown> {
+//   if (propertyChain.length === 0)
+//     return Option.none()
 
-  let cursor = unsafeObject
-  let position = 0
+//   let cursor = unsafeObject
+//   let position = 0
 
-  while (position !== propertyChain.length) {
-    const next = cursor[propertyChain[position]]
+//   while (position !== propertyChain.length) {
+//     const next = cursor[propertyChain[position]]
 
-    if (next === undefined)
-      return Option.none()
+//     if (next === undefined)
+//       return Option.none()
 
-    cursor = next
-    position++
-  }
+//     cursor = next
+//     position++
+//   }
 
-  return Option.some(cursor)
-}
+//   return Option.some(cursor)
+// }
 
 export function range(from: number, to: number): number[] {
   if (from > to)

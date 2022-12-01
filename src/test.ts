@@ -1,7 +1,7 @@
 import chalk from "chalk"
-import { Either, MaybeOk } from "./either.js"
-import { Option } from "./option.js"
-import { IndexableObject, Thunk, ThunkWithParam, zip, unimplemented } from "./util.js"
+import {Either, MaybeOk} from "./either.js"
+import {Option} from "./option.js"
+import {IndexableObject, Thunk, ThunkWithParam, zip, unimplemented} from "./util.js"
 
 enum TestType {
   Unit
@@ -118,8 +118,9 @@ export class TestBuilder<T> {
   }
 
   toEqual(expected: T): this {
-    return this.to(_ => {
+    return this.to(() => {
       if (Array.isArray(this.value))
+        // TODO: Using `any`.
         return this.compareWithArray(expected as any)
 
       return Either.if(
@@ -130,11 +131,11 @@ export class TestBuilder<T> {
   }
 
   toBeTruthy(): this {
-    return this.assert(_ => !!this.value, new Error("Value is not truthy"))
+    return this.assert(() => !!this.value, new Error("Value is not truthy"))
   }
 
   toBeFalsy(): this {
-    return this.assert(_ => !this.value, new Error("Value is not falsy"))
+    return this.assert(() => !this.value, new Error("Value is not falsy"))
   }
 
   toBeOfType(expected: Type): this {
@@ -190,7 +191,7 @@ export class TestBuilder<T> {
       if (typeof this.value !== "object" || this.value === null)
         return Either.error(`Value is not an object ${this.difference(TestBuilder.determineTypeOf(this.value), "object")}`)
 
-      const object = this.value as { [_: string]: unknown }
+      const object = this.value as {[_: string]: unknown}
       const partialKeys = Object.keys(partial)
       const valueKeys = Object.keys(this.value)
 

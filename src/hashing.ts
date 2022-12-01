@@ -1,4 +1,4 @@
-import { unimplemented } from "./util"
+import {unimplemented} from "./util"
 
 export function divisionMethod(k: number, m: number): number {
   return k % m

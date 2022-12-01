@@ -1,15 +1,14 @@
-import { BinaryTree } from "./binaryTree.js"
-import { DoublyLinkedList } from "./doublyLinkedList.js"
-import { Either } from "./either.js"
-import { Graph } from "./graph.js"
-import { Matrix } from "./matrix.js"
-import { Heap } from "./heap.js"
-import { Option } from "./option.js"
-import { PriorityQueue } from "./priorityQueue.js"
-import { SinglyLinkedList } from "./singlyLinkedList.js"
-import { Stream } from "./stream.js"
-import { assert, assertThrows, expect, suite } from "./test.js"
-import { Util } from "./util.js"
+import {BinaryTree, TreeTraversalOrder} from "./binaryTree.js"
+import {DoublyLinkedList} from "./doublyLinkedList.js"
+import {Either} from "./either.js"
+import {Graph} from "./graph.js"
+import {Matrix} from "./matrix.js"
+import {Heap} from "./heap.js"
+import {Option} from "./option.js"
+import {PriorityQueue} from "./priorityQueue.js"
+import {SinglyLinkedList} from "./singlyLinkedList.js"
+import {Stream} from "./stream.js"
+import {assert, assertThrows, expect, suite} from "./test.js"
 
 enum Size {
   Zero = 0,
@@ -128,27 +127,27 @@ suite(SinglyLinkedList)
   )
   .run()
 
-suite({ Util })
-  .test(
-    Util.unimplemented,
-    () => assertThrows(() => Util.unimplemented())
-  )
-  .test(
-    Util.validateIndex,
-    () => [
-      assert(!Util.validateIndex(0, 0)),
-      assert(Util.validateIndex(0, 1)),
-      assert(!Util.validateIndex(-1, 1))
-    ]
-  )
-  .test(
-    Util.range,
-    () => [
-      expect(Util.range(0, 3)).toEqual([0, 1, 2, 3]),
-      assertThrows(() => Util.range(1, 0))
-    ]
-  )
-  .run()
+// suite({Util})
+//   .test(
+//     Util.unimplemented,
+//     () => assertThrows(() => Util.unimplemented())
+//   )
+//   .test(
+//     Util.validateIndex,
+//     () => [
+//       assert(!Util.validateIndex(0, 0)),
+//       assert(Util.validateIndex(0, 1)),
+//       assert(!Util.validateIndex(-1, 1))
+//     ]
+//   )
+//   .test(
+//     Util.range,
+//     () => [
+//       expect(Util.range(0, 3)).toEqual([0, 1, 2, 3]),
+//       assertThrows(() => Util.range(1, 0))
+//     ]
+//   )
+//   .run()
 
 suite(DoublyLinkedList)
   .run()
@@ -223,3 +222,9 @@ suite(Option)
     expect(Hydrate.option(testValue).map(_ => _ + 1).unwrap()).toEqual(testValue + 1)
   ])
   .run()
+
+const binaryTree = new BinaryTree("A")
+
+binaryTree.left = Option.some(new BinaryTree("B"))
+binaryTree.right = Option.some(new BinaryTree("C"))
+binaryTree.traverse(node => console.log(node.value), TreeTraversalOrder.InOrder)

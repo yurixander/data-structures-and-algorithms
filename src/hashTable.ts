@@ -1,5 +1,5 @@
-import { Option } from "./option.js"
-import { unimplemented } from "./util.js"
+import {Option} from "./option.js"
+import {unimplemented} from "./util.js"
 
 export class HashTable<TKey, TValue> {
   constructor() {

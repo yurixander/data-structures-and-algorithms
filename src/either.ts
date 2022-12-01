@@ -1,4 +1,4 @@
-import { Thunk, ThunkWithParam } from "./util"
+import {Thunk, ThunkWithParam} from "./util"
 
 export type Result<T> = Either<T, Error>
 

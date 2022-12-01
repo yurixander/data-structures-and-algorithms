@@ -1,5 +1,5 @@
-import { BinaryTree } from "./binaryTree.js"
-import { Option } from "./option.js"
+import {BinaryTree} from "./binaryTree.js"
+import {Option} from "./option.js"
 
 export class BinarySearchTree<T> extends BinaryTree<T> {
   constructor(

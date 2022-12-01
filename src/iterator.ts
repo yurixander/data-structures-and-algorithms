@@ -1,4 +1,4 @@
-import { ThunkWithParam, unimplemented } from "./util";
+import {ThunkWithParam, unimplemented} from "./util"
 
 export abstract class Iterator<T> {
   abstract get values(): T[]

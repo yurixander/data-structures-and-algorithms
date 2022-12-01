@@ -1,10 +1,12 @@
-import { Option } from "./option.js"
-import { ThunkWithParam } from "./util.js"
+import {Option} from "./option.js"
+import {ThunkWithParam} from "./util.js"
 
 export enum TreeTraversalOrder {
   DepthFirstSearch,
   BreathFirstSearch,
   InOrder,
+  InOrderRecursive,
+  PreOrder,
   PostOrder
 }
 
@@ -20,6 +22,34 @@ export class BinaryTree<T> {
     public right: Option<BinaryTree<T>> = Option.none()
   ) {
     //
+  }
+
+  private inOrderTraversalIterative(callback: ThunkWithParam<BinaryTree<T>>) {
+    const stack: BinaryTree<T>[] = []
+    let current: BinaryTree<T> | null = this
+
+    while (stack.length > 0 || current !== null) {
+      // Push all the nodes to the left of the current node.
+      while (current !== null) {
+        stack.push(current)
+        current = current.left.unwrapOrElse(null)
+      }
+
+      const node = stack.pop()
+
+      if (node !== undefined) {
+        callback(node)
+        current = node.right.unwrapOrElse(null)
+      }
+      else
+        current = null
+    }
+  }
+
+  private inOrderTraversalRecursive(callback: ThunkWithParam<BinaryTree<T>>) {
+    this.left.do(left => left.inOrderTraversalRecursive(callback))
+    callback(this)
+    this.right.do(right => right.inOrderTraversalRecursive(callback))
   }
 
   *[Symbol.iterator]() {
@@ -41,8 +71,14 @@ export class BinaryTree<T> {
     return true
   }
 
-  traverse(callback: ThunkWithParam<BinaryTree<T>>): void {
-    this.collectIterative().forEach(node => callback(node))
+  traverse(callback: ThunkWithParam<BinaryTree<T>>, order: TreeTraversalOrder): void {
+    // TODO: Implement other orders.
+    if (order === TreeTraversalOrder.InOrder)
+      return this.inOrderTraversalIterative(callback)
+    else if (order === TreeTraversalOrder.InOrderRecursive)
+      return this.inOrderTraversalRecursive(callback)
+    else
+      this.collectIterative().forEach(node => callback(node))
   }
 
   isLeaf(): boolean {

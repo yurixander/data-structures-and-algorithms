@@ -1,6 +1,6 @@
-import { Either, Result } from "./either.js"
-import { Option } from "./option.js"
-import { validateIndex, cyclicRangeClamp } from "./util.js"
+import {Either, Result} from "./either.js"
+import {Option} from "./option.js"
+import {validateIndex, cyclicRangeClamp} from "./util.js"
 
 export type MatrixForEachCallback<T, U = void> = (value: T, row: number, column: number) => U
 

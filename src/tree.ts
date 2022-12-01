@@ -1,4 +1,4 @@
-import { ThunkWithParam } from "./util"
+import {ThunkWithParam} from "./util"
 
 export class Tree<T> {
   constructor(public value: T, public children: Tree<T>[] = []) {

@@ -1,5 +1,5 @@
-import { Comparator } from "./algorithm.js"
-import { Option } from "./option.js"
+import {Comparator} from "./algorithm.js"
+import {Option} from "./option.js"
 
 export class Heap<T> {
   static getParentIndex(childIndex: number): number {
@@ -87,6 +87,9 @@ export class Heap<T> {
   siftDown() {
     let index = 0
 
+    // NOTE: We only check for left child, because then it is guaranteed that
+    // there exists a right child. This is because the heap's values are based
+    // of a complete binary tree.
     while (this.hasLeftChild(index)) {
       const rightChildOpt = this.getRightChild(index)
       const leftChild = this.getLeftChild(index).unwrap()

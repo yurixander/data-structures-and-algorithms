@@ -1,6 +1,6 @@
-import { Heap } from "./heap.js"
-import { Option } from "./option.js"
-import { unimplemented } from "./util.js"
+import {Heap} from "./heap.js"
+import {Option} from "./option.js"
+import {unimplemented} from "./util.js"
 
 type PriorityQueueHeapValue<T> = [T, number]
 

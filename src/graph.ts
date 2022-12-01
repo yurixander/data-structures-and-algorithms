@@ -1,4 +1,4 @@
-import { ThunkWithParam } from "./util"
+import {ThunkWithParam} from "./util"
 
 export enum GraphProperty {
   Cyclic,

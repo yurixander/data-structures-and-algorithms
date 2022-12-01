@@ -1,5 +1,5 @@
-import { factorialRecursive } from "./math.js"
-import { Thunk, assignOrOverrideOptions, repeat } from "./util.js"
+import {factorialRecursive} from "./math.js"
+import {Thunk, assignOrOverrideOptions, repeat} from "./util.js"
 
 /**
    * An array of 3 elements representing the best case (Big-Ω) time, average time (Big-θ),
