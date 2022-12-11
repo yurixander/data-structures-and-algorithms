@@ -1,14 +1,14 @@
-import {Option} from "./option.js"
+import {Maybe} from "./maybe.js"
 
 export type Pair<T, U> = [first: T, second: U]
 
-export type Thunk<T = void> = () => T
+export type Callback<T = void> = () => T
 
-export type ThunkWithParam<T, U = void> = (_: T) => U
+export type CallbackWithParam<T, U = void> = (_: T) => U
 
 export type IndexableObject = {[propertyName: string]: unknown}
 
-// TODO: Create `Predicate` type: same as ThunkWithParam, but returns boolean and input value is deep-readonly.
+// TODO: Create `Predicate` type: same as callbackWithParam, but returns boolean and input value is deep-readonly.
 
 // export interface Ordered {
 //   lessThan()
@@ -36,9 +36,9 @@ export function assignOrOverrideOptions<T>(partialOptions: Partial<T>, defaults:
   return {...defaults, ...partialOptions}
 }
 
-export function repeat(times: number, thunk: Thunk): void {
+export function repeat(times: number, callback: Callback): void {
   for (let i = 0; i < times; i++)
-    thunk()
+    callback()
 }
 
 export function overrideDelete(): never {
@@ -49,25 +49,25 @@ export function unimplemented(): never {
   throw new Error("Not yet implemented")
 }
 
-export function zip<A, B>(a: A[], b: B[]): Iterable<[Option<A>, Option<B>]> {
+export function zip<A, B>(a: A[], b: B[]): Iterable<[Maybe<A>, Maybe<B>]> {
   const result = new Array(Math.max(a.length, b.length))
 
   for (let i = 0; i < result.length; i++)
-    result[i] = [Option.try(a.at(i)), Option.try(b.at(i))]
+    result[i] = [Maybe.try(a.at(i)), Maybe.try(b.at(i))]
 
   return result
 }
 
-export function tryZip<A, B>(a: A[], b: B[]): Option<Iterable<[A, B]>> {
+export function tryZip<A, B>(a: A[], b: B[]): Maybe<Iterable<[A, B]>> {
   if (a.length !== b.length)
-    return Option.none()
+    return Maybe.none()
 
   const result = new Array(Math.max(a.length, b.length))
 
   for (let i = 0; i < result.length; i++)
     result[i] = [a[i], b[i]]
 
-  return Option.some(result)
+  return Maybe.some(result)
 }
 
 // TODO: Fix error.
@@ -102,4 +102,13 @@ export function range(from: number, to: number): number[] {
     result[i] = from + i
 
   return result
+}
+
+export function map2<A, B, C>(a: A, b: B, callback: (a: A, b: B) => C): C {
+  return callback(a, b)
+}
+
+export function compose(...functions: Function[]): Function {
+  return (input: unknown) =>
+    functions.reduceRight((acc, func) => func(acc), input)
 }

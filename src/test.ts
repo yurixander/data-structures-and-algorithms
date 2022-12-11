@@ -1,7 +1,7 @@
 import chalk from "chalk"
 import {Either, MaybeOk} from "./either.js"
-import {Option} from "./option.js"
-import {IndexableObject, Thunk, ThunkWithParam, zip, unimplemented} from "./util.js"
+import {Maybe} from "./maybe.js"
+import {IndexableObject, Callback, CallbackWithParam, zip, unimplemented} from "./util.js"
 
 enum TestType {
   Unit
@@ -10,7 +10,7 @@ enum TestType {
 type Test = {
   type: TestType,
   name: string,
-  executor?: Thunk<MaybeOk>
+  executor?: Callback<MaybeOk>
 }
 
 export function suite(target: IndexableObject | Function): TestSuite {
@@ -18,7 +18,7 @@ export function suite(target: IndexableObject | Function): TestSuite {
 }
 
 export function expect<T>(value: T): TestBuilder<T> {
-  // CONSIDER: If the value is a thunk, consider executing it (maybe taking a parameter?). This might help with errors thrown?
+  // CONSIDER: If the value is a callback, consider executing it (maybe taking a parameter?). This might help with errors thrown?
   return new TestBuilder(value)
 }
 
@@ -27,8 +27,8 @@ export function assert(condition: boolean, message?: string): TestBuilder<boolea
   return expect(condition).toEqual(true)
 }
 
-export function assertThrows(thunk: () => unknown, cause?: string): TestBuilder<() => unknown> {
-  return expect(thunk).to(_ => {
+export function assertThrows(callback: () => unknown, cause?: string): TestBuilder<() => unknown> {
+  return expect(callback).to(_ => {
     try {
       _.value()
 
@@ -71,7 +71,7 @@ export class TestBuilder<T> {
     return typeof value as Type
   }
 
-  private chain: ThunkWithParam<this, MaybeOk>[]
+  private chain: CallbackWithParam<this, MaybeOk>[]
 
   constructor(public readonly value: T) {
     this.chain = []
@@ -87,7 +87,7 @@ export class TestBuilder<T> {
   private compareElements<U>(arrayA: U[], arrayB: U[]): MaybeOk {
     for (const [a, b] of zip(arrayA, arrayB))
       // TODO: Add an equality helper for deep comparisons.
-      if (a.isNone() || b.isNone() || a.unwrap() !== b.unwrap())
+      if (a.isNone() || b.isNone() || a.getOrDo() !== b.getOrDo())
         // TODO: Need a more descriptive message. Perhaps compare diffs?
         // BUG: Cannot unwrap if it is none. Temporarily passing in the entire object.
         return Either.error(`Element differs ${this.difference(a, b)}`)
@@ -169,7 +169,7 @@ export class TestBuilder<T> {
 
   toBeOption(isSome: boolean): this {
     return this.to(() => {
-      if (!(this.value instanceof Option))
+      if (!(this.value instanceof Maybe))
         return Either.error("Value is not an instance of Option")
 
       const condition = this.value.isSome() === isSome
@@ -213,7 +213,7 @@ export class TestBuilder<T> {
     })
   }
 
-  map<U>(callback: ThunkWithParam<T, U>): TestBuilder<U> {
+  map<U>(callback: CallbackWithParam<T, U>): TestBuilder<U> {
     // let next = new TestBuilder(callback(this.value))
 
     // next.chain = this.chain
@@ -223,7 +223,7 @@ export class TestBuilder<T> {
   }
 
   assert(
-    condition: ThunkWithParam<this, boolean>,
+    condition: CallbackWithParam<this, boolean>,
     error: Error = new Error("Unmet condition")
   ): this {
     return this.to(() => Either.if(condition(this), error))
@@ -244,7 +244,7 @@ export class TestBuilder<T> {
     for (const test of this.chain) {
       const result = test(this)
 
-      if (result.isRight)
+      if (result.isRight())
         return result
     }
 
@@ -298,7 +298,7 @@ export class TestSuite {
 
   // REVIEW: Using `any`.
   // CONSIDER: Restricting target's name to `keyof typeof T`.
-  test(target: string | Function, callback: Thunk<TestBuilder<any> | TestBuilder<any>[]>): this {
+  test(target: string | Function, callback: Callback<TestBuilder<any> | TestBuilder<any>[]>): this {
     let name = target instanceof Function ? target.name : target
 
     if (name === this.name)
@@ -372,7 +372,7 @@ export class TestSuite {
         // REVISE: Hard-coded limit. Perhaps taking it in as a default option would be better.
         runtime >= 100 ? chalk.red(runtimeString) : runtimeString
 
-      if (result.isRight) {
+      if (result.isRight()) {
         // CONSIDER: Combine log messages.
         console.log(`  ${chalk.red("✗")} ${test.name} (${runtimeColoredString})`)
         failingTests.push([test.name, result.right().message])

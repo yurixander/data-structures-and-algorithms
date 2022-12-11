@@ -1,5 +1,5 @@
 import {factorialRecursive} from "./math.js"
-import {Thunk, assignOrOverrideOptions, repeat} from "./util.js"
+import {Callback, assignOrOverrideOptions, repeat} from "./util.js"
 
 /**
    * An array of 3 elements representing the best case (Big-Ω) time, average time (Big-θ),
@@ -56,10 +56,10 @@ export enum RuntimeComplexity {
   Infinity
 }
 
-export function measure(thunk: Thunk): number {
+export function measure(callback: Callback): number {
   const start = performance.now()
 
-  thunk()
+  callback()
 
   return performance.now() - start
 }
@@ -90,13 +90,13 @@ export function runtimeComplexityOf(
     return RuntimeComplexity.Constant
 
   const linearTime = approximateTime
-  const logarithmicTime: Thunk<number> = () => Math.log(approximateTime)
-  const squareRootTime: Thunk<number> = () => Math.sqrt(approximateTime)
-  const exponentialTime: Thunk<number> = () => approximateTime ** 2
+  const logarithmicTime: Callback<number> = () => Math.log(approximateTime)
+  const squareRootTime: Callback<number> = () => Math.sqrt(approximateTime)
+  const exponentialTime: Callback<number> = () => approximateTime ** 2
 
   // NOTE: Since the approximate time will always be positive, this
   // should never fail. Therefore, we can unwrap safely.
-  const factorialTime: Thunk<number> = () => factorialRecursive(approximateTime).left()
+  const factorialTime: Callback<number> = () => factorialRecursive(approximateTime).left()
 
   if (isWithinErrorMargins(actualTime, linearTime, errorMarginPercentage))
     return RuntimeComplexity.Constant
@@ -116,7 +116,7 @@ export function runtimeComplexityOf(
  * Approximate the runtime complexity of a given operation.
  */
 export function measureRuntimeComplexity(
-  thunk: Thunk,
+  callback: Callback,
   n: number,
   partialOptions: Partial<RuntimeComplexityMeasurementOptions> = defaultRuntimeComplexityMeasurementOptions
 ): RuntimeComplexityTrio {
@@ -131,7 +131,7 @@ export function measureRuntimeComplexity(
   let sampleTimeCount = 0
 
   repeat(options.sampleSize, () => {
-    const sampleMeasurement = measure(thunk)
+    const sampleMeasurement = measure(callback)
 
     if (sampleMeasurement < fastestTime)
       fastestTime = sampleMeasurement

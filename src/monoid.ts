@@ -1,37 +1,51 @@
 export interface Monoid<T> {
-  identity: T
+  readonly identity: T
 
-  apply(a: T, b: T): T
+  op(a: T, b: T): T
+}
+
+export function combine<T>(monoid: Monoid<T>, values: T[]): T {
+  // Initialize the result to the monoid's identity element.
+  let result = monoid.identity
+
+  // Iterate over the values in the array and combine them using the
+  // monoid's binary operation.
+  for (const value of values) {
+    result = monoid.op(result, value)
+  }
+
+  // Return the result.
+  return result
 }
 
 export class AdditiveMonoid implements Monoid<number> {
   identity = 0
 
-  apply(a: number, b: number): number {
+  op(a: number, b: number): number {
     return a + b
   }
 }
 
 export class MultiplicativeMonoid implements Monoid<number> {
-  identity = 1
+  readonly identity = 1
 
-  apply(a: number, b: number): number {
+  op(a: number, b: number): number {
     return a * b
   }
 }
 
 export class StringMonoid implements Monoid<string> {
-  identity = ""
+  readonly identity = ""
 
-  apply(a: string, b: string): string {
+  op(a: string, b: string): string {
     return a + b
   }
 }
 
 export class ArrayMonoid<T> implements Monoid<T[]> {
-  identity: T[] = []
+  readonly identity: T[] = []
 
-  apply(a: T[], b: T[]): T[] {
+  op(a: T[], b: T[]): T[] {
     // TODO: Doesn't this break the principle of order doesn't matter?
     return a.concat(b)
   }

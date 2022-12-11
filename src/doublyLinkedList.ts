@@ -1,11 +1,11 @@
-import {Option} from "./option.js"
+import {Maybe} from "./maybe.js"
 import {SinglyLinkedList} from "./singlyLinkedList.js"
 
 export class DoublyLinkedList<T> extends SinglyLinkedList<T> {
   constructor(
     value: T,
-    next: Option<DoublyLinkedList<T>> = Option.none(),
-    public previous: Option<DoublyLinkedList<T>> = Option.none()
+    next: Maybe<DoublyLinkedList<T>> = Maybe.none(),
+    public previous: Maybe<DoublyLinkedList<T>> = Maybe.none()
   ) {
     super(value, next)
   }
@@ -14,7 +14,7 @@ export class DoublyLinkedList<T> extends SinglyLinkedList<T> {
     let current: DoublyLinkedList<T> = this
 
     while (current.previous.isSome())
-      current = current.previous.unwrap()
+      current = current.previous.getOrDo()
 
     return current
   }

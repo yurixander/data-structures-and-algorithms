@@ -1,5 +1,5 @@
 import {Comparator} from "./algorithm.js"
-import {Option} from "./option.js"
+import {Maybe} from "./maybe.js"
 
 export class Heap<T> {
   static getParentIndex(childIndex: number): number {
@@ -21,16 +21,16 @@ export class Heap<T> {
     //
   }
 
-  private getParent(childIndex: number): Option<T> {
-    return Option.try(this.nodes[Heap.getParentIndex(childIndex)])
+  private getParent(childIndex: number): Maybe<T> {
+    return Maybe.try(this.nodes[Heap.getParentIndex(childIndex)])
   }
 
-  private getLeftChild(parentIndex: number): Option<T> {
-    return Option.try(this.nodes[Heap.getLeftChildIndex(parentIndex)])
+  private getLeftChild(parentIndex: number): Maybe<T> {
+    return Maybe.try(this.nodes[Heap.getLeftChildIndex(parentIndex)])
   }
 
-  private getRightChild(parentIndex: number): Option<T> {
-    return Option.try(this.nodes[Heap.getRightChildIndex(parentIndex)])
+  private getRightChild(parentIndex: number): Maybe<T> {
+    return Maybe.try(this.nodes[Heap.getRightChildIndex(parentIndex)])
   }
 
   private hasParent(childIndex: number): boolean {
@@ -49,16 +49,16 @@ export class Heap<T> {
     return this.nodes.length === 0
   }
 
-  peek(): Option<T> {
+  peek(): Maybe<T> {
     if (this.nodes.length === 0)
-      return Option.none()
+      return Maybe.none()
 
-    return Option.some(this.nodes[0])
+    return Maybe.some(this.nodes[0])
   }
 
-  poll(): Option<T> {
+  poll(): Maybe<T> {
     if (this.nodes.length === 0)
-      return Option.none()
+      return Maybe.none()
 
     const value = this.peek()
 
@@ -78,7 +78,7 @@ export class Heap<T> {
 
     // REVISE: Provide selector, and we end up with only one heap implementation.
     // REVIEW: How do we know that there is a value at `index` every iteration?
-    while (this.hasParent(index) && this.getParent(index).unwrap() > this.nodes[index]) {
+    while (this.hasParent(index) && this.getParent(index).getOrDo() > this.nodes[index]) {
       this.swap(Heap.getParentIndex(index), index)
       index = Heap.getParentIndex(index)
     }
@@ -92,11 +92,11 @@ export class Heap<T> {
     // of a complete binary tree.
     while (this.hasLeftChild(index)) {
       const rightChildOpt = this.getRightChild(index)
-      const leftChild = this.getLeftChild(index).unwrap()
+      const leftChild = this.getLeftChild(index).getOrDo()
       let smallerChildIndex = Heap.getLeftChildIndex(index)
 
       // REVISE: Provide selector, and we end up with only one heap implementation.
-      if (rightChildOpt.isSome() && rightChildOpt.unwrap() < leftChild)
+      if (rightChildOpt.isSome() && rightChildOpt.getOrDo() < leftChild)
         smallerChildIndex = Heap.getRightChildIndex(index)
 
       if (this.nodes[index] < this.nodes[smallerChildIndex])

@@ -1,21 +1,28 @@
 import {Either, Result} from "./either.js"
-import {Option} from "./option.js"
+import {Maybe} from "./maybe.js"
 import {validateIndex, cyclicRangeClamp} from "./util.js"
 
-export type MatrixForEachCallback<T, U = void> = (value: T, row: number, column: number) => U
+export type MatrixForEachCallback<T, U = void> =
+  (value: T, row: number, column: number) => U
+
+// This might be pesky for all implementations!
+// export type MatrixOptions<T> = {
+//   valueAdd: (a: T, b: T) => T,
+//   valueSubtract: (a: T, b: )
+// }
 
 export class Matrix<T> {
   static unit<T>(rows: number, columns: number, initializer?: T): Result<Matrix<T>> {
     return Either.try(() => new Matrix(rows, columns, initializer))
   }
 
-  private values: T[][]
+  private readonly values: T[][]
+  private readonly capacity_: number
   private rowPointer: number
   private columnPointer: number
   private size_: number
-  private capacity_: number
 
-  private constructor(public rows: number, public columns: number, initializer?: T) {
+  constructor(public rows: number, public columns: number, initializer?: T) {
     if (rows < 1 || columns < 1)
       throw new Error("Matrix must be able to hold at least one element")
 
@@ -44,6 +51,37 @@ export class Matrix<T> {
     return this.capacity_
   }
 
+  apply(other: Matrix<T>, op: (a: T, b: T) => T): Result<Matrix<T>> {
+    if (this.rows !== other.rows || this.columns !== other.columns)
+      return Either.right(new Error("Cannot add matricies with different dimensions"))
+
+    const result = new Matrix<T>(this.rows, this.columns)
+
+    for (let i = 0; i < this.rows; i++)
+      for (let j = 0; j < this.columns; j++)
+        result.values[i][j] = op(this.values[i][j], other.values[i][j])
+
+    return Either.left(result)
+  }
+
+  /**
+   * Transposes the matrix and returns the result as a new matrix.
+   *
+   * The transpose of a matrix is a new matrix that is formed by swapping the rows and columns
+   * of the original matrix. For example, the transpose of a 3x4 matrix is a 4x3 matrix.
+   *
+   * @returns {Matrix} A new matrix that is the transpose of the original matrix.
+   */
+  transpose(): Matrix<T> {
+    const result = new Matrix<T>(this.rows, this.columns)
+
+    for (let i = 0; i < this.rows; i++)
+      for (let j = 0; j < this.columns; j++)
+        result.values[j][i] = this.values[i][j]
+
+    return result
+  }
+
   set(row: number, column: number, value: T): boolean {
     if (!validateIndex(row, this.rows) || !validateIndex(column, this.columns))
       return false
@@ -56,9 +94,9 @@ export class Matrix<T> {
     return true
   }
 
-  get(row: number, column: number): Option<T> {
+  get(row: number, column: number): Maybe<T> {
     // BUG: If the row is undefined, the other accessor will fail with an error.
-    return Option.try(this.values[row][column])
+    return Maybe.try(this.values[row][column])
   }
 
   isFull(): boolean {

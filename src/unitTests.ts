@@ -4,7 +4,7 @@ import {Either} from "./either.js"
 import {Graph} from "./graph.js"
 import {Matrix} from "./matrix.js"
 import {Heap} from "./heap.js"
-import {Option} from "./option.js"
+import {Maybe} from "./maybe.js"
 import {PriorityQueue} from "./priorityQueue.js"
 import {SinglyLinkedList} from "./singlyLinkedList.js"
 import {Stream} from "./stream.js"
@@ -33,7 +33,7 @@ abstract class Hydrate {
       if (head === null)
         head = node
       else
-        previous!.next = Option.some(node)
+        previous!.next = Maybe.some(node)
 
       previous = node
       counter++
@@ -42,8 +42,8 @@ abstract class Hydrate {
     return head!
   }
 
-  static option(value: number | null = null): Option<number> {
-    return new Option(value)
+  static option(value: number | null = null): Maybe<number> {
+    return new Maybe(value)
   }
 
   static get matrix(): Matrix<number> {
@@ -101,7 +101,7 @@ suite(SinglyLinkedList)
   )
   .test(
     SinglyLinkedList.prototype.findNthNode,
-    () => expect(Hydrate.singlyLinkedList(Size.Large).findNthNode(50).unwrap().value).toEqual(51)
+    () => expect(Hydrate.singlyLinkedList(Size.Large).findNthNode(50).getOrDo().value).toEqual(51)
   )
   .test(
     SinglyLinkedList.prototype.filter,
@@ -193,38 +193,38 @@ suite(Either)
   )
   .run()
 
-suite(Option)
+suite(Maybe)
   .test(
-    Option.prototype.bind,
-    () => assert(Hydrate.option(testValue).bind(() => Option.none()).isNone())
+    Maybe.prototype.bind,
+    () => assert(Hydrate.option(testValue).bind(() => Maybe.none()).isNone())
   )
   .test(
-    Option.prototype.isSome,
+    Maybe.prototype.isSome,
     () => assert(Hydrate.option(testValue).isSome())
   )
   .test(
-    Option.prototype.isNone,
+    Maybe.prototype.isNone,
     () => assert(Hydrate.option().isNone())
   )
-  .test(Option.prototype.unwrapOrDefault,
+  .test(Maybe.prototype.unwrapOrDefault,
     () => expect(Hydrate.option().unwrapOrDefault(testValue)).toEqual(testValue)
   )
-  .test(Option.prototype.unwrap, () => [
-    assertThrows(() => Hydrate.option().unwrap()),
-    expect(Hydrate.option(testValue).unwrap()).toEqual(testValue)
+  .test(Maybe.prototype.getOrDo, () => [
+    assertThrows(() => Hydrate.option().getOrDo()),
+    expect(Hydrate.option(testValue).getOrDo()).toEqual(testValue)
   ])
-  .test(Option.prototype.unwrapOrFailWith, () => [
+  .test(Maybe.prototype.unwrapOrFailWith, () => [
     assertThrows(() => Hydrate.option().unwrapOrFailWith("")),
     expect(Hydrate.option(testValue).unwrapOrFailWith("")).toEqual(testValue)
   ])
-  .test(Option.prototype.map, () => [
+  .test(Maybe.prototype.map, () => [
     assert(Hydrate.option().map(() => testValue).isNone()),
-    expect(Hydrate.option(testValue).map(_ => _ + 1).unwrap()).toEqual(testValue + 1)
+    expect(Hydrate.option(testValue).map(_ => _ + 1).getOrDo()).toEqual(testValue + 1)
   ])
   .run()
 
 const binaryTree = new BinaryTree("A")
 
-binaryTree.left = Option.some(new BinaryTree("B"))
-binaryTree.right = Option.some(new BinaryTree("C"))
+binaryTree.left = Maybe.some(new BinaryTree("B"))
+binaryTree.right = Maybe.some(new BinaryTree("C"))
 binaryTree.traverse(node => console.log(node.value), TreeTraversalOrder.InOrder)

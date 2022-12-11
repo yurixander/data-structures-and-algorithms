@@ -1,15 +1,16 @@
-import {Option} from "./option.js"
-import {ThunkWithParam, validateIndex} from "./util.js"
+import {ForwardIterable, ForwardIterator} from "./iterator.js"
+import {Maybe} from "./maybe.js"
+import {CallbackWithParam, validateIndex} from "./util.js"
 
-export class SinglyLinkedList<T> {
+export class SinglyLinkedList<T> implements ForwardIterable<SinglyLinkedList<T>> {
   constructor(
     public value: T,
-    public next: Option<SinglyLinkedList<T>> = Option.none()
+    public next: Maybe<SinglyLinkedList<T>> = Maybe.none()
   ) {
     //
   }
 
-  *[Symbol.iterator]() {
+  *[Symbol.iterator](): Iterator<SinglyLinkedList<T>> {
     // OPTIMIZE: Collect as needed (recall it's a generator).
     const nodes = this.collectIterative()
 
@@ -17,15 +18,33 @@ export class SinglyLinkedList<T> {
       yield node
   }
 
+  iter(): ForwardIterator<SinglyLinkedList<T>> {
+    return new ForwardIterator(this)
+  }
+
+  any(predicate: (value: T) => boolean): boolean {
+    return this.collectIterative().some(node => predicate(node.value))
+  }
+
+  all(predicate: (value: T) => boolean): boolean {
+    return this.collectIterative().every(node => predicate(node.value))
+  }
+
+  contains(value: T): boolean {
+    return this.collectIterative()
+      .map(node => node.value)
+      .includes(value)
+  }
+
   reverseImperative(): SinglyLinkedList<T> {
     // REVISE: Cleanup returning of the new head.
 
-    let bufferOpt = Option.some<SinglyLinkedList<T>>(this)
-    const previous = Option.none<SinglyLinkedList<T>>()
+    let bufferOpt = Maybe.some<SinglyLinkedList<T>>(this)
+    const previous = Maybe.none<SinglyLinkedList<T>>()
     let newHead: SinglyLinkedList<T>
 
     while (bufferOpt.isSome()) {
-      const buffer = bufferOpt.unwrap()
+      const buffer = bufferOpt.getOrDo()
       const next = buffer.next;
 
       [buffer.next, bufferOpt] = [previous, next]
@@ -37,26 +56,26 @@ export class SinglyLinkedList<T> {
     return newHead!
   }
 
-  traverse(callback: ThunkWithParam<SinglyLinkedList<T>>): void {
+  traverse(callback: CallbackWithParam<SinglyLinkedList<T>>): void {
     this.collectIterative().forEach(node => callback(node))
   }
 
-  find(predicate: ThunkWithParam<SinglyLinkedList<T>, boolean>): Option<SinglyLinkedList<T>> {
+  find(predicate: CallbackWithParam<SinglyLinkedList<T>, boolean>): Maybe<SinglyLinkedList<T>> {
     const list = this.collectIterative()
 
     for (const node of list)
       if (predicate(node))
-        return Option.some(node)
+        return Maybe.some(node)
 
-    return Option.none()
+    return Maybe.none()
   }
 
-  filter(predicate: ThunkWithParam<SinglyLinkedList<T>, boolean>): SinglyLinkedList<T>[] {
+  filter(predicate: CallbackWithParam<SinglyLinkedList<T>, boolean>): SinglyLinkedList<T>[] {
     return this.collectIterative().filter(node => predicate(node))
   }
 
-  findNthNode(position: number): Option<SinglyLinkedList<T>> {
-    return Option.try(this.collectIterative()[position])
+  findNthNode(position: number): Maybe<SinglyLinkedList<T>> {
+    return Maybe.try(this.collectIterative()[position])
   }
 
   findTail(): SinglyLinkedList<T> {
@@ -84,11 +103,11 @@ export class SinglyLinkedList<T> {
 
   collectIterative(): SinglyLinkedList<T>[] {
     const list: SinglyLinkedList<T>[] = []
-    let buffer: Option<SinglyLinkedList<T>> = Option.some(this)
+    let buffer: Maybe<SinglyLinkedList<T>> = Maybe.some(this)
 
     while (buffer.isSome()) {
-      list.push(buffer.unwrap())
-      buffer = buffer.unwrap().next
+      list.push(buffer.getOrDo())
+      buffer = buffer.getOrDo().next
     }
 
     // This error is a fail-safe, it should be unreachable.
@@ -105,12 +124,12 @@ export class SinglyLinkedList<T> {
   insertAfter(node: SinglyLinkedList<T>): void {
     const next = this.next
 
-    this.next = Option.some(node)
+    this.next = Maybe.some(node)
     node.next = next
   }
 
   detach() {
-    this.next = Option.none()
+    this.next = Maybe.none()
   }
 
   shallowClone(): SinglyLinkedList<T> {

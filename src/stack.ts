@@ -1,12 +1,12 @@
 import {DoublyLinkedList} from "./doublyLinkedList"
-import {Option} from "./option"
+import {Maybe} from "./maybe"
 
 export class Stack<T> {
-  private tailOpt: Option<DoublyLinkedList<T>>
+  private tailOpt: Maybe<DoublyLinkedList<T>>
   private size_: number
 
   constructor() {
-    this.tailOpt = Option.none()
+    this.tailOpt = Maybe.none()
     this.size_ = 0
   }
 
@@ -16,7 +16,7 @@ export class Stack<T> {
     return this.size_
   }
 
-  top(): Option<T> {
+  top(): Maybe<T> {
     return this.tailOpt.map(tail => tail.value)
   }
 
@@ -24,35 +24,35 @@ export class Stack<T> {
     const node = new DoublyLinkedList(value)
 
     if (this.tailOpt.isNone())
-      this.tailOpt = Option.some(node)
+      this.tailOpt = Maybe.some(node)
     else {
-      const tail = this.tailOpt.unwrap()
+      const tail = this.tailOpt.getOrDo()
 
-      tail.next = Option.some(node)
+      tail.next = Maybe.some(node)
       node.previous = this.tailOpt
-      this.tailOpt = Option.some(node)
+      this.tailOpt = Maybe.some(node)
     }
 
     this.size_++
   }
 
-  pop(): Option<T> {
+  pop(): Maybe<T> {
     if (this.tailOpt.isNone())
-      return Option.none()
+      return Maybe.none()
 
-    const tail = this.tailOpt.unwrap()
+    const tail = this.tailOpt.getOrDo()
 
     if (tail.previous.isSome()) {
-      const nextTail = tail.previous.unwrap()
+      const nextTail = tail.previous.getOrDo()
 
-      nextTail.next = Option.none()
-      this.tailOpt = Option.some(nextTail)
+      nextTail.next = Maybe.none()
+      this.tailOpt = Maybe.some(nextTail)
     }
     else
-      this.tailOpt = Option.none()
+      this.tailOpt = Maybe.none()
 
     this.size_--
 
-    return Option.some(tail.value)
+    return Maybe.some(tail.value)
   }
 }

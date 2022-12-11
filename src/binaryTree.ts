@@ -1,5 +1,5 @@
-import {Option} from "./option.js"
-import {ThunkWithParam} from "./util.js"
+import {Maybe} from "./maybe.js"
+import {CallbackWithParam} from "./util.js"
 
 export enum TreeTraversalOrder {
   DepthFirstSearch,
@@ -18,13 +18,13 @@ export enum BinaryTreeBranch {
 export class BinaryTree<T> {
   constructor(
     public value: T,
-    public left: Option<BinaryTree<T>> = Option.none(),
-    public right: Option<BinaryTree<T>> = Option.none()
+    public left: Maybe<BinaryTree<T>> = Maybe.none(),
+    public right: Maybe<BinaryTree<T>> = Maybe.none()
   ) {
     //
   }
 
-  private inOrderTraversalIterative(callback: ThunkWithParam<BinaryTree<T>>) {
+  private inOrderTraversalIterative(callback: CallbackWithParam<BinaryTree<T>>) {
     const stack: BinaryTree<T>[] = []
     let current: BinaryTree<T> | null = this
 
@@ -46,7 +46,7 @@ export class BinaryTree<T> {
     }
   }
 
-  private inOrderTraversalRecursive(callback: ThunkWithParam<BinaryTree<T>>) {
+  private inOrderTraversalRecursive(callback: CallbackWithParam<BinaryTree<T>>) {
     this.left.do(left => left.inOrderTraversalRecursive(callback))
     callback(this)
     this.right.do(right => right.inOrderTraversalRecursive(callback))
@@ -66,12 +66,12 @@ export class BinaryTree<T> {
     if (branch.isSome())
       return false
 
-    this[position] = Option.some(node)
+    this[position] = Maybe.some(node)
 
     return true
   }
 
-  traverse(callback: ThunkWithParam<BinaryTree<T>>, order: TreeTraversalOrder): void {
+  traverse(callback: CallbackWithParam<BinaryTree<T>>, order: TreeTraversalOrder): void {
     // TODO: Implement other orders.
     if (order === TreeTraversalOrder.InOrder)
       return this.inOrderTraversalIterative(callback)
@@ -82,7 +82,7 @@ export class BinaryTree<T> {
   }
 
   isLeaf(): boolean {
-    return this.left === Option.none() && this.right === Option.none()
+    return this.left === Maybe.none() && this.right === Maybe.none()
   }
 
   collectIterative(): BinaryTree<T>[] {
@@ -95,10 +95,10 @@ export class BinaryTree<T> {
       nodes.push(node)
 
       if (node.left.isSome())
-        queue.push(node.left.unwrap())
+        queue.push(node.left.getOrDo())
 
       if (node.right.isSome())
-        queue.push(node.right.unwrap())
+        queue.push(node.right.getOrDo())
     }
 
     return nodes
@@ -111,10 +111,10 @@ export class BinaryTree<T> {
       result.push(node)
 
       if (node.left.isSome())
-        go(node.left.unwrap())
+        go(node.left.getOrDo())
 
       if (node.right.isSome())
-        go(node.right.unwrap())
+        go(node.right.getOrDo())
     }
 
     go(this)

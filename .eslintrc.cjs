@@ -10,6 +10,7 @@ module.exports = {
   ],
   rules: {
     "@typescript-eslint/no-this-alias": "off",
-    "@typescript-eslint/no-non-null-assertion": "off"
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/ban-types": "off"
   }
 }

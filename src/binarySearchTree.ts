@@ -1,11 +1,11 @@
 import {BinaryTree} from "./binaryTree.js"
-import {Option} from "./option.js"
+import {Maybe} from "./maybe.js"
 
 export class BinarySearchTree<T> extends BinaryTree<T> {
   constructor(
     public override value: T,
-    public override left: Option<BinarySearchTree<T>> = Option.none(),
-    public override right: Option<BinarySearchTree<T>> = Option.none()
+    public override left: Maybe<BinarySearchTree<T>> = Maybe.none(),
+    public override right: Maybe<BinarySearchTree<T>> = Maybe.none()
   ) {
     super(value, left, right)
   }
@@ -14,12 +14,12 @@ export class BinarySearchTree<T> extends BinaryTree<T> {
     // TODO: Implement.
   }
 
-  binarySearchRecursive(value: T): Option<BinarySearchTree<T>> {
-    const go = (nodeOpt: Option<BinarySearchTree<T>>): Option<BinarySearchTree<T>> => {
+  binarySearchRecursive(value: T): Maybe<BinarySearchTree<T>> {
+    const go = (nodeOpt: Maybe<BinarySearchTree<T>>): Maybe<BinarySearchTree<T>> => {
       if (nodeOpt.isNone())
-        return Option.none()
+        return Maybe.none()
 
-      const node = nodeOpt.unwrap()
+      const node = nodeOpt.getOrDo()
 
       if (node.value === value)
         return nodeOpt
@@ -29,7 +29,7 @@ export class BinarySearchTree<T> extends BinaryTree<T> {
         return go(node.left)
     }
 
-    return go(Option.some(this))
+    return go(Maybe.some(this))
   }
 
   // TODO: Missing re-balancing logic.

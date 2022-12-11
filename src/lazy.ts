@@ -1,17 +1,17 @@
-import {Option} from "./option.js"
-import {Thunk} from "./util.js"
+import {Maybe} from "./maybe.js"
+import {Callback} from "./util.js"
 
 export class Lazy<T> {
-  private cachedResult: Option<T>
+  private cachedResult: Maybe<T>
 
-  constructor(public operation: Thunk<T>) {
-    this.cachedResult = Option.none()
+  constructor(public operation: Callback<T>) {
+    this.cachedResult = Maybe.none()
   }
 
   get value(): T {
     if (this.cachedResult.isNone())
-      this.cachedResult = Option.some(this.operation())
+      this.cachedResult = Maybe.some(this.operation())
 
-    return this.cachedResult.unwrap()
+    return this.cachedResult.getOrDo()
   }
 }

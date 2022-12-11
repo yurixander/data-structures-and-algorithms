@@ -1,4 +1,4 @@
-import {Thunk, ThunkWithParam} from "./util"
+import {Callback, CallbackWithParam} from "./util"
 
 export type Result<T> = Either<T, Error>
 
@@ -25,9 +25,9 @@ export class Either<L, R> {
     return new Either<T, U>(value, false)
   }
 
-  static try<T>(thunk: Thunk<T | never>): Result<T> {
+  static try<T>(callback: Callback<T | never>): Result<T> {
     try {
-      return Either.left(thunk())
+      return Either.left(callback())
     }
     catch (error) {
       if (error instanceof Error)
@@ -37,45 +37,53 @@ export class Either<L, R> {
     }
   }
 
-  private constructor(public value: L | R, public readonly isLeft: boolean) {
-    //
+  public readonly value: L | R
+  private readonly isLeft_: boolean
+
+  private constructor(value: L | R, isLeft: boolean) {
+    this.value = value
+    this.isLeft_ = isLeft
   }
 
-  get isRight(): boolean {
-    return !this.isLeft
+  isLeft(): this is L {
+    return this.isLeft_
+  }
+
+  isRight(): this is R {
+    return !this.isLeft()
   }
 
   left(): L {
-    if (!this.isLeft)
+    if (!this.isLeft_)
       throw new Error("Value is not left")
 
     return this.value as L
   }
 
   leftOr(defaultValue: L): L {
-    return this.isLeft ? this.left() : defaultValue
+    return this.isLeft_ ? this.left() : defaultValue
   }
 
   rightOr(defaultValue: R): R {
-    return this.isRight ? this.right() : defaultValue
+    return this.isRight() ? this.right() : defaultValue
   }
 
   right(): R {
-    if (this.isLeft)
+    if (this.isLeft_)
       throw new Error("Value is not right")
 
     return this.value as R
   }
 
-  mapLeft(callback: ThunkWithParam<L>): Either<L, R> {
-    if (this.isLeft)
+  mapLeft(callback: CallbackWithParam<L>): Either<L, R> {
+    if (this.isLeft_)
       callback(this.left())
 
     return this
   }
 
-  mapRight(callback: ThunkWithParam<R>): Either<L, R> {
-    if (this.isRight)
+  mapRight(callback: CallbackWithParam<R>): Either<L, R> {
+    if (this.isRight())
       callback(this.right())
 
     return this

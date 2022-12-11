@@ -11,10 +11,14 @@
     "test": "yarn build && node build/unitTests.js"
   },
   "devDependencies": {
+    "@types/node": "^18.11.10",
     "@typescript-eslint/eslint-plugin": "^5.44.0",
     "@typescript-eslint/parser": "^5.44.0",
     "chalk": "^5.1.2",
     "eslint": "^8.28.0",
     "typescript": "^4.9.3"
+  },
+  "dependencies": {
+    "readline": "^1.3.0"
   }
 }

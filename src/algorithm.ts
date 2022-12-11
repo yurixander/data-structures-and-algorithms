@@ -1,5 +1,5 @@
-import {Option} from "./option.js"
-import {Thunk} from "./util.js"
+import {Maybe} from "./maybe.js"
+import {Callback} from "./util.js"
 
 type Entry<T> = [T, number]
 
@@ -75,7 +75,7 @@ export function containsOnlyUniqueElements<T>(iterable: T[]): boolean {
   return true
 }
 
-export function binarySearchIterative<T>(iterable: T[], value: T): Option<number> {
+export function binarySearchIterative<T>(iterable: T[], value: T): Maybe<number> {
   let low = 0
   let high = iterable.length - 1
 
@@ -83,17 +83,17 @@ export function binarySearchIterative<T>(iterable: T[], value: T): Option<number
     const middle = (low + high) / 2
 
     if (iterable[middle] === value)
-      return Option.some(middle)
+      return Maybe.some(middle)
     else if (iterable[middle] < value)
       low = middle + 1
     else
       high = middle - 1
   }
 
-  return Option.none()
+  return Maybe.none()
 }
 
-export function makeArray<T>(size: number, callback: Thunk<T>): T[] {
+export function makeArray<T>(size: number, callback: Callback<T>): T[] {
   const array = new Array<T>(size)
 
   for (let i = 0; i < size; i++)

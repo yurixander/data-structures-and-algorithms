@@ -1,5 +1,5 @@
 import {Heap} from "./heap.js"
-import {Option} from "./option.js"
+import {Maybe} from "./maybe.js"
 import {unimplemented} from "./util.js"
 
 type PriorityQueueHeapValue<T> = [T, number]
@@ -19,7 +19,7 @@ export class PriorityQueue<TValue> {
     this.maxHeap.add([value, priority])
   }
 
-  dequeue(): Option<TValue> {
+  dequeue(): Maybe<TValue> {
     // return Option.some(this.maxHeap.poll()[0])
 
     // TODO: Finish implementation.

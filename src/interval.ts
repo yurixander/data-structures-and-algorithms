@@ -1,5 +1,5 @@
 import {Either, Result} from "./either.js"
-import {Option} from "./option.js"
+import {Maybe} from "./maybe.js"
 import {unimplemented} from "./util.js"
 
 export class Interval {
@@ -18,25 +18,25 @@ export class Interval {
     return this.from <= other.to && other.to <= this.from
   }
 
-  union(other: Interval): Option<Interval> {
+  union(other: Interval): Maybe<Interval> {
     if (!this.overlapsWith(other))
-      return Option.none()
+      return Maybe.none()
 
     const from = Math.min(this.from, other.from)
     const to = Math.max(this.to, other.to)
 
-    return Option.some(new Interval(from, to))
+    return Maybe.some(new Interval(from, to))
   }
 
-  difference(other: Interval): Option<Interval> {
+  difference(other: Interval): Maybe<Interval> {
     if (!this.overlapsWith(other))
-      return Option.none()
+      return Maybe.none()
 
     // TODO: Implement.
     unimplemented()
   }
 
-  intersection(other: Interval): Option<Interval> {
+  intersection(other: Interval): Maybe<Interval> {
     // TODO: Implement.
     unimplemented()
   }
