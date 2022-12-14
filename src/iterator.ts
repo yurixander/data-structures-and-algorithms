@@ -29,17 +29,17 @@ export class ForwardIterator<T> implements Iterable<T> {
    *
    * This operation is not lazy and will consume the entire iterator.
    */
-  collect<T>(): T[] {
-    const result: T[] = []
+  // collect<T>(): T[] {
+  //   const result: T[] = []
 
-    this.forEach(value => {
-      result.push(value)
+  //   this.forEach(value => {
+  //     result.push(value)
 
-      return true
-    })
+  //     return true
+  //   })
 
-    return result
-  }
+  //   return result
+  // }
 
   /**
    * Applies the given callback to each value in the iterator.
@@ -113,22 +113,22 @@ export class ForwardIterator<T> implements Iterable<T> {
     return result
   }
 
-  zip<U>(other: ForwardIterator<U>): ForwardIterator<[T, U]> {
-    return new ForwardIterator<[T, U]>(this.iterable, (value: T) => {
-      const otherValue = other.next().value
+  // zip<U>(other: ForwardIterator<U>): ForwardIterator<[T, U]> {
+  //   return new ForwardIterator<[T, U]>(this.iterable, (value: T) => {
+  //     const otherValue = other.next().value
 
-      if (otherValue === undefined)
-        return undefined
+  //     if (otherValue === undefined)
+  //       return undefined
 
-      return [value, otherValue]
-    })
-  }
+  //     return [value, otherValue]
+  //   })
+  // }
 
-  enumerate(): ForwardIterator<[number, T]> {
-    return new ForwardIterator<[number, T]>(this.iterable, (value: T) =>
-      [this.index, value]
-    )
-  }
+  // enumerate(): ForwardIterator<[number, T]> {
+  //   return new ForwardIterator<[number, T]>(this.iterable, (value: T) =>
+  //     [this.index, value]
+  //   )
+  // }
 
   // FIXME: Type errors.
   // map<U>(predicate: CallbackWithParam<T, U>): ForwardIterator<T, U> {

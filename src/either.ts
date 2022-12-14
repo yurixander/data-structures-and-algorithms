@@ -2,7 +2,7 @@ import {Callback, CallbackWithParam} from "./util"
 
 export type Result<T> = Either<T, Error>
 
-export type MaybeOk = Either<void, Error>
+export type MaybeOk<T = Error> = Either<void, T>
 
 export class Either<L, R> {
   static ok(): MaybeOk {

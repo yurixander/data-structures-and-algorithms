@@ -8,6 +8,10 @@ export type CallbackWithParam<T, U = void> = (_: T) => U
 
 export type IndexableObject = {[propertyName: string]: unknown}
 
+export type Immutable<T> = {
+  +readonly [Key in keyof T]: Immutable<T[Key]>
+}
+
 // TODO: Create `Predicate` type: same as callbackWithParam, but returns boolean and input value is deep-readonly.
 
 // export interface Ordered {
