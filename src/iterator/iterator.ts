@@ -1,5 +1,5 @@
-import {Maybe} from "./maybe"
-import {CallbackWithParam, unimplemented} from "./util"
+import {Maybe} from "../monad/maybe"
+import {CallbackWithParam, unimplemented} from "../util"
 
 export interface ForwardIterable<T> {
   iter(): ForwardIterator<T>
@@ -29,17 +29,17 @@ export class ForwardIterator<T> implements Iterable<T> {
    *
    * This operation is not lazy and will consume the entire iterator.
    */
-  // collect<T>(): T[] {
-  //   const result: T[] = []
+  toArray(): T[] {
+    const result: T[] = []
 
-  //   this.forEach(value => {
-  //     result.push(value)
+    this.forEach(value => {
+      result.push(value)
 
-  //     return true
-  //   })
+      return true
+    })
 
-  //   return result
-  // }
+    return result
+  }
 
   /**
    * Applies the given callback to each value in the iterator.
@@ -78,7 +78,7 @@ export class ForwardIterator<T> implements Iterable<T> {
    *
    * This operation is not lazy and will consume the entire iterator.
    */
-  find(predicate: CallbackWithParam<T, boolean>): Maybe<T> {
+  findOne(predicate: CallbackWithParam<T, boolean>): Maybe<T> {
     let result: Maybe<T> = Maybe.none()
 
     this.forEach(value => {
@@ -113,16 +113,24 @@ export class ForwardIterator<T> implements Iterable<T> {
     return result
   }
 
-  // zip<U>(other: ForwardIterator<U>): ForwardIterator<[T, U]> {
-  //   return new ForwardIterator<[T, U]>(this.iterable, (value: T) => {
-  //     const otherValue = other.next().value
+  forAll(predicate: CallbackWithParam<T, boolean>): boolean {
+    return !this.findOne(value => !predicate(value)).isSome()
+  }
 
-  //     if (otherValue === undefined)
-  //       return undefined
+  thereExists(predicate: CallbackWithParam<T, boolean>): boolean {
+    return this.findOne(predicate).isSome()
+  }
 
-  //     return [value, otherValue]
-  //   })
-  // }
+  zip<U>(other: ForwardIterator<U>): ForwardIterator<[T, U]> {
+    return new ForwardIterator<[T, U]>(zip(this.iterable, other), (value: T) => {
+      const otherValue = other.next().value
+
+      if (otherValue === undefined)
+        return undefined
+
+      return [value, otherValue]
+    })
+  }
 
   // enumerate(): ForwardIterator<[number, T]> {
   //   return new ForwardIterator<[number, T]>(this.iterable, (value: T) =>
@@ -131,9 +139,9 @@ export class ForwardIterator<T> implements Iterable<T> {
   // }
 
   // FIXME: Type errors.
-  // map<U>(predicate: CallbackWithParam<T, U>): ForwardIterator<T, U> {
-  //   return new ForwardIterator<T, U>(this.iterable, (value: T) => predicate(value))
-  // }
+  map<U>(predicate: CallbackWithParam<T, U>): ForwardIterator<U> {
+    return new ForwardIterator<U>(this.iterable, (value: T) => predicate(value))
+  }
 }
 
 export class BidirectionalIterator<T> extends ForwardIterator<T> {

@@ -1,4 +1,4 @@
-import {Maybe} from "./maybe"
+import {Maybe} from "./monad/maybe"
 import {Callback} from "./util"
 
 export default function match<T, U>(subject: T): MatchBuilder<T, U> {

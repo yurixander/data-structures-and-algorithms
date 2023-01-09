@@ -40,6 +40,19 @@ export class Graph<T> {
     return properties
   }
 
+  traverse(
+    callback: CallbackWithParam<Graph<T>>,
+    algorithm: GraphTraversalAlgorithm = GraphTraversalAlgorithm.DepthFirstSearch
+  ): void {
+    switch (algorithm) {
+      case GraphTraversalAlgorithm.DepthFirstSearch:
+        return this.traverseDepthFirst(callback)
+      case GraphTraversalAlgorithm.BreathFirstSearch:
+        // TODO: Implement.
+        throw new Error("Not yet implemented")
+    }
+  }
+
   private traverseDepthFirst(callback: CallbackWithParam<Graph<T>>): void {
     const queue: Graph<T>[] = [this]
     const nodesVisited = new Set<Graph<T>>()
@@ -52,19 +65,6 @@ export class Graph<T> {
         queue.push(...node.neighbors)
         nodesVisited.add(node)
       }
-    }
-  }
-
-  traverse(
-    callback: CallbackWithParam<Graph<T>>,
-    algorithm: GraphTraversalAlgorithm = GraphTraversalAlgorithm.DepthFirstSearch
-  ): void {
-    switch (algorithm) {
-      case GraphTraversalAlgorithm.DepthFirstSearch:
-        return this.traverseDepthFirst(callback)
-      case GraphTraversalAlgorithm.BreathFirstSearch:
-        // TODO: Implement.
-        throw new Error("Not yet implemented")
     }
   }
 

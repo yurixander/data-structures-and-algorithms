@@ -1,5 +1,5 @@
-import {Either, Result} from "./either.js"
-import {Maybe} from "./maybe.js"
+import {Either, Result} from "./monad/either.js"
+import {Maybe} from "./monad/maybe.js"
 import {unimplemented} from "./util.js"
 
 export class Interval {
@@ -16,6 +16,10 @@ export class Interval {
 
   overlapsWith(other: Interval): boolean {
     return this.from <= other.to && other.to <= this.from
+  }
+
+  contains(other: Interval): boolean {
+    return this.from <= other.from && this.to >= other.to
   }
 
   union(other: Interval): Maybe<Interval> {
@@ -41,7 +45,8 @@ export class Interval {
     unimplemented()
   }
 
-  contains(other: Interval): boolean {
-    return this.from <= other.from && this.to >= other.to
+  isDisjointFrom(other: Interval): boolean {
+    // TODO: Implement.
+    unimplemented()
   }
 }

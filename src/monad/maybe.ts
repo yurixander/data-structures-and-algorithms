@@ -1,5 +1,5 @@
 import {Monad} from "./monad"
-import {Callback, CallbackWithParam} from "./util"
+import {Callback, CallbackWithParam, Unsafe} from "../util"
 
 type Falsy = undefined | null | false
 
@@ -38,13 +38,21 @@ export class Maybe<T> implements Monad<T> {
     return !this.isNone()
   }
 
-  getOrDo(): T {
-    return this.unwrapOrFailWith("Attempted to unwrap none value")
+  getOrDo(): Unsafe<T> {
+    return this.expect("Attempted to unwrap none value")
   }
 
-  unwrapOrFailWith(message: string): T {
+  /**
+   * Unsafely unwrap the underlying value (if any).
+   *
+   * ## Errors
+   *
+   * If the operation fails, an error with the given reason
+   * as its message will be thrown.
+   */
+  expect(reason: string): Unsafe<T> {
     if (this.value === null)
-      throw new Error(message)
+      throw new Error(reason)
 
     return this.value
   }

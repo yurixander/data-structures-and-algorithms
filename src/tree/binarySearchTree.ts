@@ -1,5 +1,5 @@
 import {BinaryTree} from "./binaryTree.js"
-import {Maybe} from "./maybe.js"
+import {Maybe} from "../monad/maybe.js"
 
 export class BinarySearchTree<T> extends BinaryTree<T> {
   constructor(

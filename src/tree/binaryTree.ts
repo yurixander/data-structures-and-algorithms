@@ -1,5 +1,5 @@
-import {Maybe} from "./maybe.js"
-import {CallbackWithParam} from "./util.js"
+import {Maybe} from "../monad/maybe.js"
+import {CallbackWithParam} from "../util.js"
 
 export enum TreeTraversalOrder {
   DepthFirstSearch,

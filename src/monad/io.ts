@@ -15,7 +15,7 @@ export class IO<T = void> implements Monad<T> {
     this.effect = effect
   }
 
-  map<U>(f: (value: T) => U): Monad<U> {
+  map<U>(f: (value: T) => U): IO<U> {
     return IO.lift(() => f(this.effect()))
   }
 
@@ -32,22 +32,23 @@ export function printLn(text: string): IO {
   return IO.lift(() => console.log(text))
 }
 
-export function prompt(message?: string, default_?: string): IO<Maybe<string>> {
-  return IO.lift(() => Maybe.try(window.prompt(message, default_)))
+export function prompt(message?: string, fallback?: string): IO<Maybe<string>> {
+  return IO.lift(() => Maybe.try(window.prompt(message, fallback)))
 }
 
 // REVIEW: Shouldn't it be `Future<IO<string>>`?
 export function readLn(query: string): IO<Future<string>> {
   return IO.lift(() =>
     Future.lift(resolve =>
-      createInterface(stdin, stdout).question(query, answer => resolve(answer))
+      createInterface(stdin, stdout)
+        .question(query, answer => resolve(answer))
     )
   )
 }
 
 function main() {
-  const curryPrintLn = (txt: string) =>
-    () => printLn(txt)
+  const curryPrintLn = (text: string) =>
+    () => printLn(text)
 
   printLn("hello world")
     .bind(curryPrintLn("hi"))

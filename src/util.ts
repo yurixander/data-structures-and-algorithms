@@ -1,4 +1,4 @@
-import {Maybe} from "./maybe.js"
+import {Maybe} from "./monad/maybe.js"
 
 export type Pair<T, U> = [first: T, second: U]
 
@@ -11,6 +11,12 @@ export type IndexableObject = {[propertyName: string]: unknown}
 export type Immutable<T> = {
   +readonly [Key in keyof T]: Immutable<T[Key]>
 }
+
+/**
+ * A meta type representing a result of an operation may cause a
+ * runtime error to be thrown.
+ */
+export type Unsafe<T = void> = T | never
 
 // TODO: Create `Predicate` type: same as callbackWithParam, but returns boolean and input value is deep-readonly.
 
@@ -53,13 +59,27 @@ export function unimplemented(): never {
   throw new Error("Not yet implemented")
 }
 
-export function zip<A, B>(a: A[], b: B[]): Iterable<[Maybe<A>, Maybe<B>]> {
-  const result = new Array(Math.max(a.length, b.length))
+export function zip<A, B>(
+  a: Iterable<A>,
+  b: Iterable<B>
+): Iterable<[Maybe<A>, Maybe<B>]> {
+  const iteratorA = a[Symbol.iterator]()
+  const iteratorB = b[Symbol.iterator]()
 
-  for (let i = 0; i < result.length; i++)
-    result[i] = [Maybe.try(a.at(i)), Maybe.try(b.at(i))]
+  return {
+    [Symbol.iterator]: () => ({
+      // TODO: Adapt to `Maybe`.
+      next: () => {
+        const nextA = iteratorA.next()
+        const nextB = iteratorB.next()
 
-  return result
+        if (nextA.done || nextB.done)
+          return {done: true, value: undefined}
+
+        return {done: false, value: [nextA.value, nextB.value]}
+      }
+    })
+  }
 }
 
 export function tryZip<A, B>(a: A[], b: B[]): Maybe<Iterable<[A, B]>> {

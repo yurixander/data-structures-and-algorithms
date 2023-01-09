@@ -1,6 +1,6 @@
-import {ForwardIterable, ForwardIterator} from "./iterator.js"
-import {Maybe} from "./maybe.js"
-import {CallbackWithParam, validateIndex} from "./util.js"
+import {ForwardIterable, ForwardIterator} from "../iterator/iterator.js"
+import {Maybe} from "../monad/maybe.js"
+import {CallbackWithParam, validateIndex} from "../util.js"
 
 export class SinglyLinkedList<T> implements ForwardIterable<SinglyLinkedList<T>> {
   constructor(

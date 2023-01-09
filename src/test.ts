@@ -1,6 +1,6 @@
 import chalk from "chalk"
-import {Either, MaybeOk} from "./either.js"
-import {Maybe} from "./maybe.js"
+import {Either, MaybeOk} from "./monad/either.js"
+import {Maybe} from "./monad/maybe.js"
 import {IndexableObject, Callback, CallbackWithParam, zip, unimplemented} from "./util.js"
 
 enum TestType {

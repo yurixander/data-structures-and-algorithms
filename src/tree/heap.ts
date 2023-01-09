@@ -1,5 +1,5 @@
-import {Comparator} from "./algorithm.js"
-import {Maybe} from "./maybe.js"
+import {Comparator} from "../iterator/algorithm.js"
+import {Maybe} from "../monad/maybe.js"
 
 export class Heap<T> {
   static getParentIndex(childIndex: number): number {

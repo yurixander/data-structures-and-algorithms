@@ -1,12 +1,12 @@
-import {BinaryTree, TreeTraversalOrder} from "./binaryTree.js"
-import {DoublyLinkedList} from "./doublyLinkedList.js"
-import {Either} from "./either.js"
+import {BinaryTree, TreeTraversalOrder} from "./tree/binaryTree.js"
+import {DoublyLinkedList} from "./linkedList/doublyLinkedList.js"
+import {Either} from "./monad/either.js"
 import {Graph} from "./graph.js"
 import {Matrix} from "./matrix.js"
-import {Heap} from "./heap.js"
-import {Maybe} from "./maybe.js"
+import {Heap} from "./tree/heap.js"
+import {Maybe} from "./monad/maybe.js"
 import {PriorityQueue} from "./priorityQueue.js"
-import {SinglyLinkedList} from "./singlyLinkedList.js"
+import {SinglyLinkedList} from "./linkedList/singlyLinkedList.js"
 import {Stream} from "./stream.js"
 import {assert, assertThrows, expect, suite} from "./test.js"
 
@@ -213,9 +213,9 @@ suite(Maybe)
     assertThrows(() => Hydrate.option().getOrDo()),
     expect(Hydrate.option(testValue).getOrDo()).toEqual(testValue)
   ])
-  .test(Maybe.prototype.unwrapOrFailWith, () => [
-    assertThrows(() => Hydrate.option().unwrapOrFailWith("")),
-    expect(Hydrate.option(testValue).unwrapOrFailWith("")).toEqual(testValue)
+  .test(Maybe.prototype.expect, () => [
+    assertThrows(() => Hydrate.option().expect("")),
+    expect(Hydrate.option(testValue).expect("")).toEqual(testValue)
   ])
   .test(Maybe.prototype.map, () => [
     assert(Hydrate.option().map(() => testValue).isNone()),

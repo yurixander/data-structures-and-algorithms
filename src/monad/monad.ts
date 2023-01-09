@@ -1,5 +1,5 @@
 import {Either} from "./either"
-import {unimplemented} from "./util"
+import {unimplemented} from "../util"
 
 export interface Monad<T> {
   /**

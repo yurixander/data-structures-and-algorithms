@@ -1,5 +1,5 @@
 import {Monad} from "./monad"
-import {unimplemented} from "./util"
+import {unimplemented} from "../util"
 
 export enum FutureState {
   Unexecuted,
@@ -8,7 +8,8 @@ export enum FutureState {
   Failed
 }
 
-type FutureCallback<T> = (resolve: (value: T) => void, reject: (error: Error) => void) => void
+type FutureCallback<T> =
+  (resolve: (value: T) => void, reject: (error: Error) => void) => void
 
 export class Future<T> implements Monad<T> {
   static lift<T>(callback: FutureCallback<T>): Future<T> {

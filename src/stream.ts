@@ -1,4 +1,4 @@
-import {Maybe} from "./maybe.js"
+import {Maybe} from "./monad/maybe.js"
 import {Callback} from "./util.js"
 
 export class Stream<T> {

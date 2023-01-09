@@ -1,4 +1,4 @@
-import {Maybe} from "./maybe.js"
+import {Maybe} from "../monad/maybe.js"
 import {SinglyLinkedList} from "./singlyLinkedList.js"
 
 export class DoublyLinkedList<T> extends SinglyLinkedList<T> {

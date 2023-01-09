@@ -1,5 +1,5 @@
-import {DoublyLinkedList} from "./doublyLinkedList"
-import {Maybe} from "./maybe"
+import {DoublyLinkedList} from "./linkedList/doublyLinkedList"
+import {Maybe} from "./monad/maybe"
 
 export class Stack<T> {
   private tailOpt: Maybe<DoublyLinkedList<T>>

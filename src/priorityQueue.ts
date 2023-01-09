@@ -1,5 +1,5 @@
-import {Heap} from "./heap.js"
-import {Maybe} from "./maybe.js"
+import {Heap} from "./tree/heap.js"
+import {Maybe} from "./monad/maybe.js"
 import {unimplemented} from "./util.js"
 
 type PriorityQueueHeapValue<T> = [T, number]

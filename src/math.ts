@@ -1,4 +1,4 @@
-import {Either, Result} from "./either.js"
+import {Either, Result} from "./monad/either.js"
 
 export function factorialRecursiveNonTail(number: number): Result<number> {
   if (number < 0)

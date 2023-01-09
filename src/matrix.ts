@@ -1,5 +1,5 @@
-import {Either, Result} from "./either.js"
-import {Maybe} from "./maybe.js"
+import {Either, Result} from "./monad/either.js"
+import {Maybe} from "./monad/maybe.js"
 import {validateIndex, cyclicRangeClamp} from "./util.js"
 
 export type MatrixForEachCallback<T, U = void> =

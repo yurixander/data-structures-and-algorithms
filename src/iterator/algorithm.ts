@@ -1,5 +1,5 @@
-import {Maybe} from "./maybe.js"
-import {Callback} from "./util.js"
+import {Maybe} from "../monad/maybe.js"
+import {Callback} from "../util.js"
 
 type Entry<T> = [T, number]
 
