@@ -22,15 +22,15 @@ export class Heap<T> {
   }
 
   private getParent(childIndex: number): Maybe<T> {
-    return Maybe.try(this.nodes[Heap.getParentIndex(childIndex)])
+    return Maybe.from(this.nodes.at(Heap.getParentIndex(childIndex)))
   }
 
   private getLeftChild(parentIndex: number): Maybe<T> {
-    return Maybe.try(this.nodes[Heap.getLeftChildIndex(parentIndex)])
+    return Maybe.from(this.nodes.at(Heap.getLeftChildIndex(parentIndex)))
   }
 
   private getRightChild(parentIndex: number): Maybe<T> {
-    return Maybe.try(this.nodes[Heap.getRightChildIndex(parentIndex)])
+    return Maybe.from(this.nodes.at(Heap.getRightChildIndex(parentIndex)))
   }
 
   private hasParent(childIndex: number): boolean {
@@ -42,6 +42,12 @@ export class Heap<T> {
   }
 
   private swap(indexA: number, indexB: number): void {
+    if (indexA === indexB)
+      return
+
+    // TODO: Handle out of bounds indexing problems.
+
+    // TODO: This should be using `.at()`.
     [this.nodes[indexA], this.nodes[indexB]] = [this.nodes[indexB], this.nodes[indexA]]
   }
 
@@ -50,14 +56,11 @@ export class Heap<T> {
   }
 
   peek(): Maybe<T> {
-    if (this.nodes.length === 0)
-      return Maybe.nothing()
-
-    return Maybe.just(this.nodes[0])
+    return this.isEmpty() ? Maybe.nothing() : Maybe.just(this.nodes[0])
   }
 
   poll(): Maybe<T> {
-    if (this.nodes.length === 0)
+    if (this.isEmpty())
       return Maybe.nothing()
 
     const value = this.peek()

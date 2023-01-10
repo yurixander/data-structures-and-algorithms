@@ -5,7 +5,7 @@ import {unimplemented} from "./util.js"
 export class Interval {
   static unit(from: number, to: number): Result<Interval> {
     if (from > to)
-      return Either.right(new Error("Interval range is invalid"))
+      return Either.error("Interval range is invalid")
 
     return Either.left(new Interval(from, to))
   }

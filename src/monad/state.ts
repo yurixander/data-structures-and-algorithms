@@ -12,7 +12,19 @@ export class State<S, A> implements Monad<A> {
   }
 
   static set<S>(state: S): State<S, void> {
-    return new State(_ => [undefined, state])
+    return new State(() => [undefined, state])
+  }
+
+  static modify<S>(f: (state: S) => S): State<S, void> {
+    return State.get<S>().map(f).bind(State.set)
+  }
+
+  static sequence<S, A>(...states: State<S, A>[]): State<S, A[]> {
+    return states.reduce(
+      (acc, state) =>
+        acc.bind(values => state.map(value => [...values, value])),
+      State.lift<S, A[]>([])
+    )
   }
 
   readonly run: (state: S) => [A, S]

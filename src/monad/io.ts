@@ -9,6 +9,13 @@ export class IO<T = void> implements Monad<T> {
     return new IO(effect)
   }
 
+  static sequence(...ios: IO[]): IO {
+    return ios.reduce(
+      (acc, io) => acc.bind(() => io),
+      IO.lift(() => undefined)
+    )
+  }
+
   private readonly effect: () => T
 
   private constructor(effect: () => T) {
@@ -19,7 +26,7 @@ export class IO<T = void> implements Monad<T> {
     return IO.lift(() => f(this.effect()))
   }
 
-  bind<U>(f: (value: T) => Monad<U>): Monad<U> {
+  bind<U>(f: (value: T) => IO<U>): IO<U> {
     return f(this.effect())
   }
 
@@ -33,7 +40,7 @@ export function printLn(text: string): IO {
 }
 
 export function prompt(message?: string, fallback?: string): IO<Maybe<string>> {
-  return IO.lift(() => Maybe.try(window.prompt(message, fallback)))
+  return IO.lift(() => Maybe.from(window.prompt(message, fallback)))
 }
 
 // REVIEW: Shouldn't it be `Future<IO<string>>`?

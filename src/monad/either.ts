@@ -3,19 +3,27 @@ import {Maybe} from "./maybe.js"
 
 export type Result<T> = Either<T, Error>
 
-export type MaybeOk<T = Error> = Either<void, T>
+export type MayFail<T = Error> = Either<void, T>
 
 export class Either<L, R> {
-  static ok(): MaybeOk {
-    return Either.left(undefined)
+  static ok<T = void>(value: T): Result<T> {
+    return Either.left(value)
   }
 
-  static error(message: string): MaybeOk {
+  static error<T = void>(message: string): Result<T> {
     return Either.right(new Error(message))
   }
 
-  static if(condition: boolean, error: Error): MaybeOk {
-    return condition ? Either.ok() : Either.right(error)
+  static pass(): MayFail {
+    return Either.ok(undefined)
+  }
+
+  static passIf(condition: boolean, error: Error): MayFail {
+    return condition ? Either.pass() : Either.right(error)
+  }
+
+  static assert(condition: boolean, errorMessage: string): MayFail {
+    return Either.passIf(condition, new Error(errorMessage))
   }
 
   static left<T, U>(value: T): Either<T, U> {
@@ -34,7 +42,7 @@ export class Either<L, R> {
       if (error instanceof Error)
         return Either.right(error)
       else
-        return Either.right(new Error("Uncaught exception thrown, which is not of type error!"))
+        return Either.error("Uncaught exception thrown, which is not of type error!")
     }
   }
 

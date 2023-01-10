@@ -10,6 +10,8 @@ import {Stream} from "../stream.js"
 import {assert, assertThrows, expect, suite} from "./test.js"
 import {Maybe} from "../monad/maybe.js"
 import {State} from "../monad/state.js"
+import {Nat} from "../nat.js"
+import {Unsafe} from "../util.js"
 
 enum Size {
   Zero = 0,
@@ -47,11 +49,10 @@ abstract class Hydrate {
     return new Maybe(value)
   }
 
-  static get matrix(): Matrix<number> {
-    return Matrix
-      .unit<number>(3, 3)
-      .left()
-      .unwrap("a 3x3 matrix should have correct bounds")
+  static get matrix(): Unsafe<Matrix<number>> {
+    const size = Nat.from(3).unwrap("3 is a natural number")
+
+    return Matrix.unit<number>(size, size)
   }
 
   static map<T, U>(value: T) {
@@ -228,10 +229,16 @@ suite(Maybe)
   .run()
 
 suite(State)
-  .test("do", () => {
+  .test("simple", () => {
     const state = State.get<number>().map(x => x + 1).bind(State.set)
 
     return expect(state.run(0)).toEqual([undefined, 1])
+  })
+  .test("increment", () => {
+    const increment = State.modify<number>(x => x + 1)
+    const state = State.sequence(increment, increment, increment)
+
+    return expect(state.run(0)).toEqual([[], 3])
   })
   .run()
 

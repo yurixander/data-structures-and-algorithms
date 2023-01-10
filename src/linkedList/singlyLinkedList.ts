@@ -75,7 +75,7 @@ export class SinglyLinkedList<T> implements ForwardIterable<SinglyLinkedList<T>>
   }
 
   findNthNode(position: number): Maybe<SinglyLinkedList<T>> {
-    return Maybe.try(this.collectIterative()[position])
+    return Maybe.from(this.collectIterative()[position])
   }
 
   findTail(): SinglyLinkedList<T> {

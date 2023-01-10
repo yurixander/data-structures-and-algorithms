@@ -1,4 +1,4 @@
-import {CallbackWithParam} from "./util.js"
+import {CallbackWithParam, unimplemented} from "./util.js"
 
 export enum GraphProperty {
   Cyclic,
@@ -49,7 +49,7 @@ export class Graph<T> {
         return this.traverseDepthFirst(callback)
       case GraphTraversalAlgorithm.BreathFirstSearch:
         // TODO: Implement.
-        throw new Error("Not yet implemented")
+        unimplemented()
     }
   }
 

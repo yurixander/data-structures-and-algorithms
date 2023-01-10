@@ -13,7 +13,7 @@ export class Maybe<T> implements Monad<T>, Comparable<Maybe<T>> {
     return new Maybe(value)
   }
 
-  static try<T>(result: T | Falsy): Maybe<T> {
+  static from<T>(result: T | Falsy): Maybe<T> {
     return result === null
       || result === undefined
       || (typeof result === "boolean" && !result)

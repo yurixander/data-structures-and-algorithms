@@ -1,5 +1,5 @@
 import chalk from "chalk"
-import {Either, MaybeOk} from "../monad/either.js"
+import {Either, MayFail} from "../monad/either.js"
 import {Maybe} from "../monad/maybe.js"
 import {IndexableObject, Callback, CallbackWithParam, zip, unimplemented, Primitive, isArray, isObject, Comparable} from "../util.js"
 
@@ -10,7 +10,7 @@ enum TestType {
 type Test = {
   type: TestType,
   name: string,
-  executor?: Callback<MaybeOk>
+  executor?: Callback<MayFail>
 }
 
 export function suite(target: IndexableObject | Function): TestSuite {
@@ -39,9 +39,9 @@ export function assertThrows(callback: () => unknown, cause?: string): TestBuild
       if (cause !== undefined && !(error instanceof Error))
         return Either.error("Expected error but caught different object")
       else if (cause !== undefined && error instanceof Error)
-        return Either.if(error.cause !== cause, new Error("Error cause mismatch"))
+        return Either.assert(error.cause !== cause, "Error cause mismatch")
 
-      return Either.ok()
+      return Either.pass()
     }
   })
 }
@@ -58,7 +58,7 @@ export enum Type {
   Array = "array"
 }
 
-export type Matcher<T> = (instance: TestBuilder<T>) => MaybeOk
+export type Matcher<T> = (instance: TestBuilder<T>) => MayFail
 
 export class TestBuilder<T> {
   private static determineTypeOf(value: unknown): Type {
@@ -71,7 +71,7 @@ export class TestBuilder<T> {
     return typeof value as Type
   }
 
-  private chain: CallbackWithParam<this, MaybeOk>[]
+  private chain: CallbackWithParam<this, MayFail>[]
 
   constructor(public readonly value: T) {
     this.chain = []
@@ -84,7 +84,7 @@ export class TestBuilder<T> {
     ].join("")
   }
 
-  private compareElements<U>(arrayA: U[], arrayB: U[]): MaybeOk {
+  private compareElements<T>(arrayA: T[], arrayB: T[]): MayFail {
     for (const [a, b] of zip(arrayA, arrayB))
       // TODO: Add an equality helper for deep comparisons.
       if (a.isNone() || b.isNone() || a.getOrDo() !== b.getOrDo())
@@ -92,20 +92,20 @@ export class TestBuilder<T> {
         // BUG: Cannot unwrap if it is none. Temporarily passing in the entire object.
         return Either.error(`Element differs ${this.difference(a, b)}`)
 
-    return Either.ok()
+    return Either.pass()
   }
 
-  private compareWithArray<U extends unknown[]>(expected: U): MaybeOk {
+  private compareWithArray<T extends unknown[]>(expected: T): MayFail {
     // TODO: Use `isObject` helper.
     if (typeof this.value !== "object" || this.value === null || !Array.isArray(this.value))
-      return Either.right(new Error("Value is not an array"))
+      return Either.error("Value is not an array")
     else if (this.value.length !== expected.length)
       return Either.error(`Array lengths differ ${this.difference(this.value.length, expected.length)}`)
 
     return this.compareElements(this.value, expected)
   }
 
-  private compareWithObject<U extends object>(object: U): MaybeOk {
+  private compareWithObject<T extends object>(object: T): MayFail {
     if (typeof this.value !== "object" || this.value === null)
       return Either.error("Value is not an object")
 
@@ -125,18 +125,18 @@ export class TestBuilder<T> {
       else if (isObject(this.value) && isObject(expected))
         return this.compareWithObject(expected)
 
-      return Either.if(
+      return Either.assert(
         this.value === expected,
-        new Error(`Values are not equal ${this.difference(this.value, expected)}`)
+        `Values are not equal ${this.difference(this.value, expected)}`
       )
     })
   }
 
   toEqualComparable(other: T extends Comparable<T> ? T : never): this {
     return this.to(() => {
-      return Either.if(
+      return Either.assert(
         other.equals(other),
-        new Error(`Objects are not equal ${this.difference(this.value, other)}`)
+        `Objects are not equal ${this.difference(this.value, other)}`
       )
     })
   }
@@ -171,9 +171,9 @@ export class TestBuilder<T> {
       if (!Array.isArray(this.value))
         return Either.error("Value is not an array")
 
-      return Either.if(
+      return Either.assert(
         this.value.length === length,
-        new Error(`Array length differs from expected size ${this.difference(this.value.length, length)}`)
+        `Array length differs from expected size ${this.difference(this.value.length, length)}`
       )
     })
   }
@@ -185,7 +185,7 @@ export class TestBuilder<T> {
 
       const condition = this.value.isSome() === isSome
 
-      return Either.if(condition, new Error(`Value is ${condition ? "some" : "none"}`))
+      return Either.assert(condition, `Value is ${condition ? "some" : "none"}`)
     })
   }
 
@@ -220,7 +220,7 @@ export class TestBuilder<T> {
           return Either.error(`Object property mismatch: ${partialKey} ${this.difference(objectValue, partialValue)}`)
       }
 
-      return Either.ok()
+      return Either.pass()
     })
   }
 
@@ -237,7 +237,7 @@ export class TestBuilder<T> {
     condition: CallbackWithParam<this, boolean>,
     error: Error = new Error("Unmet condition")
   ): this {
-    return this.to(() => Either.if(condition(this), error))
+    return this.to(() => Either.passIf(condition(this), error))
   }
 
   not(matcher: Matcher<T>): this {
@@ -251,7 +251,7 @@ export class TestBuilder<T> {
     return this
   }
 
-  try(): MaybeOk {
+  try(): MayFail {
     for (const test of this.chain) {
       const result = test(this)
 
@@ -259,7 +259,7 @@ export class TestBuilder<T> {
         return result
     }
 
-    return Either.ok()
+    return Either.pass()
   }
 }
 
@@ -361,7 +361,7 @@ export class TestSuite {
       if (test.executor === undefined)
         continue
 
-      let result: MaybeOk
+      let result: MayFail
       const startTime = performance.now()
 
       try {

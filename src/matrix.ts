@@ -1,5 +1,6 @@
-import {Either, MaybeOk, Result} from "./monad/either.js"
+import {Either, MayFail, Result} from "./monad/either.js"
 import {Maybe} from "./monad/maybe.js"
+import {Nat} from "./nat.js"
 import {validateIndex, cyclicRangeClamp} from "./util.js"
 
 export type MatrixForEachCallback<T, U = void> =
@@ -12,8 +13,12 @@ export type MatrixForEachCallback<T, U = void> =
 // }
 
 export class Matrix<T> {
-  static unit<T>(rows: number, columns: number, initializer?: T): Result<Matrix<T>> {
-    return Either.try(() => new Matrix(rows, columns, initializer))
+  static unit<T>(
+    rows: Nat,
+    columns: Nat,
+    initializer?: T
+  ): Matrix<T> {
+    return new Matrix(rows, columns, initializer)
   }
 
   private readonly values: T[][]
@@ -22,18 +27,19 @@ export class Matrix<T> {
   private columnPointer: number
   private sizeMarker: number
 
-  constructor(public rows: number, public columns: number, initializer?: T) {
-    if (rows < 1 || columns < 1)
-      throw new Error("Matrix must be able to hold at least one element")
-
+  constructor(
+    public readonly rows: Nat,
+    public readonly columns: Nat,
+    initializer?: T
+  ) {
     this.rowPointer = 0
     this.columnPointer = 0
-    this.values = new Array(rows)
+    this.values = new Array(rows.value)
     this.sizeMarker = 0
-    this.capacity_ = rows * columns
+    this.capacity_ = rows.value * columns.value
 
     for (const index of this.values.keys())
-      this.values[index] = new Array(columns)
+      this.values[index] = new Array(columns.value)
 
     if (initializer !== undefined)
       this.fill(initializer)
@@ -53,12 +59,12 @@ export class Matrix<T> {
 
   apply(other: Matrix<T>, op: (a: T, b: T) => T): Result<Matrix<T>> {
     if (this.rows !== other.rows || this.columns !== other.columns)
-      return Either.right(new Error("Cannot add matricies with different dimensions"))
+      return Either.error("Cannot add matricies with different dimensions")
 
     const result = new Matrix<T>(this.rows, this.columns)
 
-    for (let i = 0; i < this.rows; i++)
-      for (let j = 0; j < this.columns; j++)
+    for (let i = 0; i < this.rows.value; i++)
+      for (let j = 0; j < this.columns.value; j++)
         result.values[i][j] = op(this.values[i][j], other.values[i][j])
 
     return Either.left(result)
@@ -75,15 +81,15 @@ export class Matrix<T> {
   transpose(): Matrix<T> {
     const result = new Matrix<T>(this.rows, this.columns)
 
-    for (let i = 0; i < this.rows; i++)
-      for (let j = 0; j < this.columns; j++)
+    for (let i = 0; i < this.rows.value; i++)
+      for (let j = 0; j < this.columns.value; j++)
         result.values[j][i] = this.values[i][j]
 
     return result
   }
 
   set(row: number, column: number, value: T): boolean {
-    if (!validateIndex(row, this.rows) || !validateIndex(column, this.columns))
+    if (!validateIndex(row, this.rows.value) || !validateIndex(column, this.columns.value))
       return false
 
     if (this.values[row][column] === undefined)
@@ -96,7 +102,7 @@ export class Matrix<T> {
 
   get(row: number, column: number): Maybe<T> {
     // BUG: If the row is undefined, the other accessor will fail with an error.
-    return Maybe.try(this.values[row][column])
+    return Maybe.from(this.values[row][column])
   }
 
   isFull(): boolean {
@@ -104,8 +110,8 @@ export class Matrix<T> {
   }
 
   forEach(callback: MatrixForEachCallback<T>, skipEmpty = true): void {
-    for (let rowIndex = 0; rowIndex < this.rows; rowIndex++)
-      for (let columnIndex = 0; columnIndex < this.columns; columnIndex++)
+    for (let rowIndex = 0; rowIndex < this.rows.value; rowIndex++)
+      for (let columnIndex = 0; columnIndex < this.columns.value; columnIndex++)
         if (!skipEmpty || this.values[rowIndex][columnIndex] !== undefined)
           callback(this.values[rowIndex][columnIndex], rowIndex, columnIndex)
   }
@@ -142,10 +148,10 @@ export class Matrix<T> {
     if (this.isFull() || !this.set(this.rowPointer, this.columnPointer, value))
       return false
 
-    this.rowPointer = cyclicRangeClamp(this.rowPointer, 1, this.rows)
+    this.rowPointer = cyclicRangeClamp(this.rowPointer, 1, this.rows.value)
 
     this.columnPointer =
-      cyclicRangeClamp(this.columnPointer, 1, this.columns)
+      cyclicRangeClamp(this.columnPointer, 1, this.columns.value)
 
     return true
   }
@@ -158,9 +164,9 @@ export class Matrix<T> {
     return this
   }
 
-  resize(rows: number, columns: number): MaybeOk {
+  resize(rows: number, columns: number): MayFail {
     if (rows < 1 || columns < 1 || !Number.isInteger(columns))
-      return Either.right(new Error(`Cannot resize matrix: Dimensions '${rows}x${columns}' are invalid`))
+      return Either.error(`Cannot resize matrix: Dimensions '${rows}x${columns}' are invalid`)
 
     this.values.length = rows
 
@@ -169,7 +175,7 @@ export class Matrix<T> {
 
     // TODO: Need to resize inner columns.
 
-    return Either.ok()
+    return Either.pass()
   }
 
   // performOperation()

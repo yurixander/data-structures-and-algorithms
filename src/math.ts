@@ -2,7 +2,7 @@ import {Either, Result} from "./monad/either.js"
 
 export function factorialRecursiveNonTail(number: number): Result<number> {
   if (number < 0)
-    return Either.right(new Error("Factorial of negative numbers is undefined"))
+    return Either.error("Factorial of negative numbers is undefined")
   else if (number === 0)
     return Either.left(1)
 
@@ -12,7 +12,7 @@ export function factorialRecursiveNonTail(number: number): Result<number> {
 
 export function factorialRecursive(number: number): Result<number> {
   if (number < 0)
-    return Either.right(new Error("Factorial of negative numbers is undefined"))
+    return Either.error("Factorial of negative numbers is undefined")
 
   let product = 1
 
@@ -33,7 +33,7 @@ export function factorialRecursive(number: number): Result<number> {
 
 export function factorialIterative(number: number): Result<number> {
   if (number < 0)
-    return Either.right(new Error("Factorial of negative numbers is undefined"))
+    return Either.error("Factorial of negative numbers is undefined")
 
   let product = 1
 

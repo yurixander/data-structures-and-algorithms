@@ -16,6 +16,10 @@ export type Immutable<T> = {
 
 export type Primitive = string | number | boolean | null | undefined
 
+export enum AssertionMessage {
+  InvalidMatrixProportions = "Matrix proportions should be non-negative"
+}
+
 /**
  * A meta type representing a result of an operation may cause a
  * runtime error to be thrown.
@@ -73,22 +77,22 @@ export function zip<A, B>(
   const iteratorA = a[Symbol.iterator]()
   const iteratorB = b[Symbol.iterator]()
 
-  // TODO: Fix error.
-  unimplemented()
-  // return {
-  //   [Symbol.iterator]: () => ({
-  //     // TODO: Adapt to `Maybe`.
-  //     next: () => {
-  //       const nextA = iteratorA.next()
-  //       const nextB = iteratorB.next()
+  return {
+    [Symbol.iterator]: () => ({
+      next: () => {
+        const nextA = iteratorA.next()
+        const nextB = iteratorB.next()
 
-  //       if (nextA.done || nextB.done)
-  //         return {done: true, value: undefined}
+        if (nextA.done && nextB.done)
+          return {done: true, value: undefined}
 
-  //       return {done: false, value: [nextA.value, nextB.value]}
-  //     }
-  //   })
-  // }
+        const valueA = nextA.done ? Maybe.nothing<A>() : Maybe.just(nextA.value)
+        const valueB = nextB.done ? Maybe.nothing<B>() : Maybe.just(nextB.value)
+
+        return {done: false, value: [valueA, valueB]}
+      }
+    })
+  }
 }
 
 export function tryZip<A, B>(a: A[], b: B[]): Maybe<Iterable<[A, B]>> {
@@ -186,4 +190,17 @@ export function isObject(value: unknown): value is IndexableObject {
 
 export function isArray(value: unknown): value is unknown[] {
   return Array.isArray(value)
+}
+
+export function unsafeAssert(
+  condition: boolean,
+  reasoning: string
+): Unsafe {
+  if (!condition) {
+    throw new Error(reasoning)
+  }
+}
+
+export function isProperNumber(number: number): boolean {
+  return !isNaN(number) && isFinite(number)
 }
