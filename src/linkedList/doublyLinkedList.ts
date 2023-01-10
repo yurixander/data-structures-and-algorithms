@@ -4,8 +4,8 @@ import {SinglyLinkedList} from "./singlyLinkedList.js"
 export class DoublyLinkedList<T> extends SinglyLinkedList<T> {
   constructor(
     value: T,
-    next: Maybe<DoublyLinkedList<T>> = Maybe.none(),
-    public previous: Maybe<DoublyLinkedList<T>> = Maybe.none()
+    next: Maybe<DoublyLinkedList<T>> = Maybe.nothing(),
+    public previous: Maybe<DoublyLinkedList<T>> = Maybe.nothing()
   ) {
     super(value, next)
   }

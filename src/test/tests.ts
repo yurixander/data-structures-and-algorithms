@@ -1,14 +1,15 @@
-import {BinaryTree, TreeTraversalOrder} from "./tree/binaryTree.js"
-import {DoublyLinkedList} from "./linkedList/doublyLinkedList.js"
-import {Either} from "./monad/either.js"
-import {Graph} from "./graph.js"
-import {Matrix} from "./matrix.js"
-import {Heap} from "./tree/heap.js"
-import {Maybe} from "./monad/maybe.js"
-import {PriorityQueue} from "./priorityQueue.js"
-import {SinglyLinkedList} from "./linkedList/singlyLinkedList.js"
-import {Stream} from "./stream.js"
+import {BinaryTree, TreeTraversalOrder} from "../tree/binaryTree.js"
+import {DoublyLinkedList} from "../linkedList/doublyLinkedList.js"
+import {Either} from "../monad/either.js"
+import {Graph} from "../graph.js"
+import {Matrix} from "../matrix.js"
+import {Heap} from "../tree/heap.js"
+import {PriorityQueue} from "../priorityQueue.js"
+import {SinglyLinkedList} from "../linkedList/singlyLinkedList.js"
+import {Stream} from "../stream.js"
 import {assert, assertThrows, expect, suite} from "./test.js"
+import {Maybe} from "../monad/maybe.js"
+import {State} from "../monad/state.js"
 
 enum Size {
   Zero = 0,
@@ -33,7 +34,7 @@ abstract class Hydrate {
       if (head === null)
         head = node
       else
-        previous!.next = Maybe.some(node)
+        previous!.next = Maybe.just(node)
 
       previous = node
       counter++
@@ -47,7 +48,10 @@ abstract class Hydrate {
   }
 
   static get matrix(): Matrix<number> {
-    return Matrix.unit<number>(3, 3).left()
+    return Matrix
+      .unit<number>(3, 3)
+      .left()
+      .unwrap("a 3x3 matrix should have correct bounds")
   }
 
   static map<T, U>(value: T) {
@@ -187,7 +191,7 @@ suite(Either)
   .test(
     Either.prototype.left,
     () => [
-      expect(Either.left(null).left()).toEqual(null),
+      expect(Either.left(null).left()).toEqualComparable(Maybe.nothing()),
       assertThrows(() => Either.right(null).left())
     ]
   )
@@ -196,7 +200,7 @@ suite(Either)
 suite(Maybe)
   .test(
     Maybe.prototype.bind,
-    () => assert(Hydrate.option(testValue).bind(() => Maybe.none()).isNone())
+    () => assert(Hydrate.option(testValue).bind(() => Maybe.nothing()).isNone())
   )
   .test(
     Maybe.prototype.isSome,
@@ -213,9 +217,9 @@ suite(Maybe)
     assertThrows(() => Hydrate.option().getOrDo()),
     expect(Hydrate.option(testValue).getOrDo()).toEqual(testValue)
   ])
-  .test(Maybe.prototype.expect, () => [
-    assertThrows(() => Hydrate.option().expect("")),
-    expect(Hydrate.option(testValue).expect("")).toEqual(testValue)
+  .test(Maybe.prototype.unwrap, () => [
+    assertThrows(() => Hydrate.option().unwrap("")),
+    expect(Hydrate.option(testValue).unwrap("")).toEqual(testValue)
   ])
   .test(Maybe.prototype.map, () => [
     assert(Hydrate.option().map(() => testValue).isNone()),
@@ -223,8 +227,16 @@ suite(Maybe)
   ])
   .run()
 
+suite(State)
+  .test("do", () => {
+    const state = State.get<number>().map(x => x + 1).bind(State.set)
+
+    return expect(state.run(0)).toEqual([undefined, 1])
+  })
+  .run()
+
 const binaryTree = new BinaryTree("A")
 
-binaryTree.left = Maybe.some(new BinaryTree("B"))
-binaryTree.right = Maybe.some(new BinaryTree("C"))
+binaryTree.left = Maybe.just(new BinaryTree("B"))
+binaryTree.right = Maybe.just(new BinaryTree("C"))
 binaryTree.traverse(node => console.log(node.value), TreeTraversalOrder.InOrder)

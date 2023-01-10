@@ -1,8 +1,8 @@
-import {Maybe} from "./maybe"
-import {Monad} from "./monad"
+import {Maybe} from "./maybe.js"
+import {Monad} from "./monad.js"
 import {createInterface} from "readline"
 import {stdin, stdout} from "process"
-import {Future} from "./future"
+import {Future} from "./future.js"
 
 export class IO<T = void> implements Monad<T> {
   static lift<T>(effect: () => T): IO<T> {

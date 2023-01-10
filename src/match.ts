@@ -1,5 +1,5 @@
-import {Maybe} from "./monad/maybe"
-import {Callback} from "./util"
+import {Maybe} from "./monad/maybe.js"
+import {Callback} from "./util.js"
 
 export default function match<T, U>(subject: T): MatchBuilder<T, U> {
   return new MatchBuilder(subject)
@@ -12,13 +12,13 @@ class MatchBuilder<T, U> {
 
   constructor(subject: T) {
     this.subject = subject
-    this.result = Maybe.none()
+    this.result = Maybe.nothing()
   }
 
   with(value: Partial<T>, then: Callback<U>): this {
     // TODO: Need specialized comparison for objects.
     if (this.result.isNone() && this.subject === value)
-      this.result = Maybe.some(then())
+      this.result = Maybe.just(then())
 
     return this
   }

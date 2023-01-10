@@ -1,4 +1,5 @@
-import {Callback, CallbackWithParam, Unsafe} from "../util"
+import {Callback, CallbackWithParam, Unsafe} from "../util.js"
+import {Maybe} from "./maybe.js"
 
 export type Result<T> = Either<T, Error>
 
@@ -53,38 +54,32 @@ export class Either<L, R> {
     return !this.isLeft()
   }
 
-  left(): L {
-    if (!this.isLeftMarker)
-      throw new Error("Value is not left")
-
-    return this.value as L
+  left(): Maybe<L> {
+    return this.isLeft() ? Maybe.just(this.value) : Maybe.nothing()
   }
 
   leftOr(defaultValue: L): L {
-    return this.isLeftMarker ? this.left() : defaultValue
+    return this.left().unwrapOrDefault(defaultValue)
   }
 
   rightOr(defaultValue: R): R {
-    return this.isRight() ? this.right() : defaultValue
+    return this.right().unwrapOrDefault(defaultValue)
   }
 
-  right(): R {
-    if (this.isLeftMarker)
-      throw new Error("Value is not right")
-
-    return this.value as R
+  right(): Maybe<R> {
+    return this.isRight() ? Maybe.just(this.value) : Maybe.nothing()
   }
 
   mapLeft(callback: CallbackWithParam<L>): Either<L, R> {
-    if (this.isLeftMarker)
-      callback(this.left())
+    if (this.isLeft())
+      callback(this.value)
 
     return this
   }
 
   mapRight(callback: CallbackWithParam<R>): Either<L, R> {
     if (this.isRight())
-      callback(this.right())
+      callback(this.value)
 
     return this
   }

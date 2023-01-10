@@ -1,19 +1,19 @@
-import {DoublyLinkedList} from "./linkedList/doublyLinkedList"
-import {Maybe} from "./monad/maybe"
+import {DoublyLinkedList} from "./linkedList/doublyLinkedList.js"
+import {Maybe} from "./monad/maybe.js"
 
 export class Stack<T> {
   private tailOpt: Maybe<DoublyLinkedList<T>>
-  private size_: number
+  private sizeMarker: number
 
   constructor() {
-    this.tailOpt = Maybe.none()
-    this.size_ = 0
+    this.tailOpt = Maybe.nothing()
+    this.sizeMarker = 0
   }
 
   // TODO: Implement iterator.
 
   get size(): number {
-    return this.size_
+    return this.sizeMarker
   }
 
   top(): Maybe<T> {
@@ -24,35 +24,35 @@ export class Stack<T> {
     const node = new DoublyLinkedList(value)
 
     if (this.tailOpt.isNone())
-      this.tailOpt = Maybe.some(node)
+      this.tailOpt = Maybe.just(node)
     else {
       const tail = this.tailOpt.getOrDo()
 
-      tail.next = Maybe.some(node)
+      tail.next = Maybe.just(node)
       node.previous = this.tailOpt
-      this.tailOpt = Maybe.some(node)
+      this.tailOpt = Maybe.just(node)
     }
 
-    this.size_++
+    this.sizeMarker++
   }
 
   pop(): Maybe<T> {
     if (this.tailOpt.isNone())
-      return Maybe.none()
+      return Maybe.nothing()
 
     const tail = this.tailOpt.getOrDo()
 
     if (tail.previous.isSome()) {
       const nextTail = tail.previous.getOrDo()
 
-      nextTail.next = Maybe.none()
-      this.tailOpt = Maybe.some(nextTail)
+      nextTail.next = Maybe.nothing()
+      this.tailOpt = Maybe.just(nextTail)
     }
     else
-      this.tailOpt = Maybe.none()
+      this.tailOpt = Maybe.nothing()
 
-    this.size_--
+    this.sizeMarker--
 
-    return Maybe.some(tail.value)
+    return Maybe.just(tail.value)
   }
 }

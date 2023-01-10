@@ -1,10 +1,13 @@
 import {Maybe} from "./monad/maybe.js"
 import {Callback} from "./util.js"
 
+/**
+ * An incremental infinite list.
+ */
 export class Stream<T> {
   static fibonacci = (() => {
     const go = (f0: number, f1: number): Stream<number> =>
-      new Stream(f0, Maybe.some(() => go(f1, f0 + f1)))
+      new Stream(f0, Maybe.just(() => go(f1, f0 + f1)))
 
     return go(0, 1)
   })()
@@ -14,11 +17,11 @@ export class Stream<T> {
   // TODO: Cyclic stream.
 
   static from(number: number): Stream<number> {
-    return new Stream(number, Maybe.some(() => Stream.from(number + 1)))
+    return new Stream(number, Maybe.just(() => Stream.from(number + 1)))
   }
 
   static fromCallback<T>(callback: Callback<T>): Stream<T> {
-    return new Stream(callback(), Maybe.some(() => Stream.fromCallback(callback)))
+    return new Stream(callback(), Maybe.just(() => Stream.fromCallback(callback)))
   }
 
   static constant(number: number): Stream<number> {
@@ -26,27 +29,27 @@ export class Stream<T> {
   }
 
   static signs(number: number): Stream<number> {
-    return new Stream(number, Maybe.some(() => Stream.signs(-number)))
+    return new Stream(number, Maybe.just(() => Stream.signs(-number)))
   }
 
   constructor(
     // TODO: First value must be lazy-evaluated, otherwise the first value will be evaluated when the stream is created. Alternatively, is there a way to specify when to use laziness?
     public readonly value: T,
-    public readonly next: Maybe<Callback<Stream<T>>> = Maybe.none()
+    public readonly next: Maybe<Callback<Stream<T>>> = Maybe.nothing()
   ) {
     //
   }
 
   takeImperative(amount: number): T[] {
     let count = 0
-    let bufferOpt: Maybe<Stream<T>> = Maybe.some(this)
+    let bufferOpt: Maybe<Stream<T>> = Maybe.just(this)
     const result: T[] = []
 
     while (count !== amount && bufferOpt.isSome()) {
       const buffer = bufferOpt.getOrDo()
 
       result.push(buffer.value)
-      bufferOpt = Maybe.some(buffer.next.getOrDo()())
+      bufferOpt = Maybe.just(buffer.next.getOrDo()())
       count++
     }
 
@@ -56,8 +59,8 @@ export class Stream<T> {
   // BUG: Somehow, for the last stream node, it is `null`.
   take(amount: number): Stream<T> {
     const next = this.next.isSome() && amount > 1
-      ? Maybe.some(() => this.next.getOrDo()().take(amount - 1))
-      : Maybe.none<Callback<Stream<T>>>()
+      ? Maybe.just(() => this.next.getOrDo()().take(amount - 1))
+      : Maybe.nothing<Callback<Stream<T>>>()
 
     return new Stream(this.value, next)
   }

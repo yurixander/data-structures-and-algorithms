@@ -1,4 +1,4 @@
-import {CallbackWithParam} from "../util"
+import {CallbackWithParam} from "../util.js"
 
 export class Tree<T> {
   constructor(public value: T, public children: Tree<T>[] = []) {

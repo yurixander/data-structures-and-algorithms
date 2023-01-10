@@ -18,8 +18,8 @@ export enum BinaryTreeBranch {
 export class BinaryTree<T> {
   constructor(
     public value: T,
-    public left: Maybe<BinaryTree<T>> = Maybe.none(),
-    public right: Maybe<BinaryTree<T>> = Maybe.none()
+    public left: Maybe<BinaryTree<T>> = Maybe.nothing(),
+    public right: Maybe<BinaryTree<T>> = Maybe.nothing()
   ) {
     //
   }
@@ -66,7 +66,7 @@ export class BinaryTree<T> {
     if (branch.isSome())
       return false
 
-    this[position] = Maybe.some(node)
+    this[position] = Maybe.just(node)
 
     return true
   }
@@ -82,7 +82,7 @@ export class BinaryTree<T> {
   }
 
   isLeaf(): boolean {
-    return this.left === Maybe.none() && this.right === Maybe.none()
+    return this.left === Maybe.nothing() && this.right === Maybe.nothing()
   }
 
   collectIterative(): BinaryTree<T>[] {

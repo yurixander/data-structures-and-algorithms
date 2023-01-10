@@ -14,13 +14,13 @@ export class String {
 
   private chars: Char[] = []
   private charSet: Set<Char>
-  private _isPalindrome: Lazy<boolean>
+  private isPalindromeMarker: Lazy<boolean>
 
   constructor(public value: string) {
     this.chars = value.split("")
     this.charSet = new Set(value)
 
-    this._isPalindrome = new Lazy(() =>
+    this.isPalindromeMarker = Lazy.lift(() =>
       this.value === this.chars.reverse().join("")
     )
   }
@@ -33,8 +33,9 @@ export class String {
     return this.value
   }
 
+  // TODO: Should be moved to `algorithm`, and not be a method of `String`.
   isPalindrome(): boolean {
-    return this._isPalindrome.value
+    return this.isPalindromeMarker.value
   }
 
   getWords(): string[] {

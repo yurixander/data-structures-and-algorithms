@@ -1,5 +1,5 @@
-import {Either} from "./either"
-import {unimplemented} from "../util"
+import {Either} from "./either.js"
+import {unimplemented} from "../util.js"
 
 export interface Monad<T> {
   /**
@@ -19,34 +19,6 @@ export interface Monad<T> {
    * Get or execute the value or action abstracted by this monad.
    */
   getOrDo(): T
-}
-
-export class Maybe2<T> implements Monad<T> {
-  private readonly value: T | undefined
-
-  constructor(value: T | undefined) {
-    this.value = value
-  }
-
-  isSome(): this is Maybe2<T> & {value: T} {
-    return this.value !== null
-  }
-
-  isNone(): this is Maybe2<T> & {value: null} {
-    return !this.isSome()
-  }
-
-  map<U>(f: (value: T) => U): Monad<U> {
-    throw new Error("Method not implemented.")
-  }
-
-  bind<U>(f: (value: T) => Monad<U>): Monad<U> {
-    throw new Error("Method not implemented.")
-  }
-
-  getOrDo(): T {
-    throw new Error("Pending")
-  }
 }
 
 type Result<T> = Either<T, Error>
@@ -115,7 +87,7 @@ export class Parser<T> implements Monad<T> {
 
   static sequence2<A, B>(a: Parser<A>, b: Parser<B>): Monad<[A, B]> {
     // TODO: Implement.
-    throw new Error("Unimplemented")
+    unimplemented()
   }
 
   readonly parse: (input: string) => [T, string] | null

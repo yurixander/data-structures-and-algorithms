@@ -4,15 +4,19 @@ import {Callback} from "./util.js"
 type Args = unknown[]
 
 export class Lazy<T> {
+  static lift<T>(operation: Callback<T>): Lazy<T> {
+    return new Lazy(operation)
+  }
+
   private cachedResult: Maybe<T>
 
-  constructor(public operation: Callback<T>) {
-    this.cachedResult = Maybe.none()
+  private constructor(public operation: Callback<T>) {
+    this.cachedResult = Maybe.nothing()
   }
 
   get value(): T {
     if (this.cachedResult.isNone())
-      this.cachedResult = Maybe.some(this.operation())
+      this.cachedResult = Maybe.just(this.operation())
 
     return this.cachedResult.getOrDo()
   }

@@ -1,14 +1,14 @@
 {
   "name": "data-structs-and-algos",
   "version": "1.0.0",
-  "main": "build/index.js",
+  "main": "dist/index.js",
   "license": "MIT",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "yarn build && node build/index.js",
-    "test": "yarn build && node build/unitTests.js"
+    "start": "yarn build && node dist/index.js",
+    "test": "yarn build && node dist/test/tests.js"
   },
   "devDependencies": {
     "@types/node": "^18.11.10",

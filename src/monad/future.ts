@@ -1,5 +1,5 @@
-import {Monad} from "./monad"
-import {unimplemented} from "../util"
+import {Monad} from "./monad.js"
+import {unimplemented} from "../util.js"
 
 export enum FutureState {
   Unexecuted,

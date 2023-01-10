@@ -1,11 +1,13 @@
-import {Maybe} from "../monad/maybe"
-import {CallbackWithParam, unimplemented} from "../util"
+import {Maybe} from "../monad/maybe.js"
+import {CallbackWithParam, unimplemented} from "../util.js"
 
 export interface ForwardIterable<T> {
   iter(): ForwardIterator<T>
 }
 
 export type IteratorPredicate<T> = (value: T) => T | undefined
+
+export type Into<T, U> = (values: Iterable<T>) => U
 
 export class ForwardIterator<T> implements Iterable<T> {
   readonly iterable: Iterable<T>
@@ -29,16 +31,20 @@ export class ForwardIterator<T> implements Iterable<T> {
    *
    * This operation is not lazy and will consume the entire iterator.
    */
-  toArray(): T[] {
-    const result: T[] = []
+  intoArray(): T[] {
+    return this.into(values => Array.from(values))
+  }
 
-    this.forEach(value => {
-      result.push(value)
+  intoSet(): Set<T> {
+    return this.into(values => new Set(values))
+  }
 
-      return true
-    })
+  into<U>(into: Into<T, U>): U {
+    const values: T[] = []
 
-    return result
+    this.forEach(value => void values.push(value))
+
+    return into(values)
   }
 
   /**
@@ -46,7 +52,7 @@ export class ForwardIterator<T> implements Iterable<T> {
    *
    * This operation is not lazy and will consume the entire iterator.
    */
-  forEach(callback: CallbackWithParam<T, boolean>): void {
+  forEach(callback: CallbackWithParam<T, boolean | void>): void {
     let done = false
 
     do {
@@ -55,8 +61,10 @@ export class ForwardIterator<T> implements Iterable<T> {
       // REVIEW: Why is `.done` property undefined? This may be an unsafe cast.
       done = next.done!
 
+      const signal = callback(next.value)
+
       // REVIEW: Why is value not of type `T`?
-      if (!callback(next.value))
+      if (signal !== undefined && !signal)
         return
     }
     while (!done)
@@ -79,11 +87,11 @@ export class ForwardIterator<T> implements Iterable<T> {
    * This operation is not lazy and will consume the entire iterator.
    */
   findOne(predicate: CallbackWithParam<T, boolean>): Maybe<T> {
-    let result: Maybe<T> = Maybe.none()
+    let result: Maybe<T> = Maybe.nothing()
 
     this.forEach(value => {
       if (predicate(value)) {
-        result = Maybe.some(value)
+        result = Maybe.just(value)
 
         return false
       }
@@ -95,14 +103,14 @@ export class ForwardIterator<T> implements Iterable<T> {
   }
 
   nth(n: number): Maybe<T> {
-    let result: Maybe<T> = Maybe.none()
+    let result: Maybe<T> = Maybe.nothing()
     let index = -1
 
     this.forEach(value => {
       index++
 
       if (index === n) {
-        result = Maybe.some(value)
+        result = Maybe.just(value)
 
         return false
       }
@@ -122,14 +130,55 @@ export class ForwardIterator<T> implements Iterable<T> {
   }
 
   zip<U>(other: ForwardIterator<U>): ForwardIterator<[T, U]> {
-    return new ForwardIterator<[T, U]>(zip(this.iterable, other), (value: T) => {
-      const otherValue = other.next().value
+    // TODO: Fix error.
+    unimplemented()
+    // return new ForwardIterator<[T, U]>(zip(this.iterable, other), (value: T) => {
+    //   const otherValue = other.next().value
 
-      if (otherValue === undefined)
+    //   if (otherValue === undefined)
+    //     return undefined
+
+    //   return [value, otherValue]
+    // })
+  }
+
+  take(amount: number): ForwardIterator<T> {
+    // REVISE: This is wrong.
+    return new ForwardIterator<T>(this.iterable, (value: T) => {
+      if (amount === 0)
         return undefined
 
-      return [value, otherValue]
+      amount--
+
+      return value
     })
+  }
+
+  chain(other: ForwardIterator<T>): ForwardIterator<T> {
+    // TODO: Implement.
+    unimplemented()
+  }
+
+  chainOne(value: T): ForwardIterator<T> {
+    // TODO: Implement.
+    unimplemented()
+  }
+
+  count(): number {
+    let count = 0
+
+    this.forEach(() => {
+      count++
+
+      return true
+    })
+
+    return count
+  }
+
+  skip(amount: number): void {
+    // TODO: Implement.
+    unimplemented()
   }
 
   // enumerate(): ForwardIterator<[number, T]> {
@@ -138,9 +187,9 @@ export class ForwardIterator<T> implements Iterable<T> {
   //   )
   // }
 
-  // FIXME: Type errors.
   map<U>(predicate: CallbackWithParam<T, U>): ForwardIterator<U> {
-    return new ForwardIterator<U>(this.iterable, (value: T) => predicate(value))
+    // REVISE: Not lazy.
+    return new ForwardIterator<U>(this.intoArray().map(predicate))
   }
 }
 

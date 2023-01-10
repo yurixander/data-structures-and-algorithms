@@ -11,7 +11,7 @@ export class HashTable<TKey, TValue> {
   }
 
   get(key: TKey): Maybe<TValue> {
-    return Maybe.none()
+    return Maybe.nothing()
   }
 
   has(key: TKey): boolean {

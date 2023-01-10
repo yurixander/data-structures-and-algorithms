@@ -1,15 +1,15 @@
-import {Monad} from "./monad"
-import {Callback, CallbackWithParam, Unsafe} from "../util"
+import {Monad} from "./monad.js"
+import {Callback, CallbackWithParam, Comparable, Unsafe} from "../util.js"
 
 type Falsy = undefined | null | false
 
-export class Maybe<T> implements Monad<T> {
-  static none<T>(): Maybe<T> {
+export class Maybe<T> implements Monad<T>, Comparable<Maybe<T>> {
+  static nothing<T>(): Maybe<T> {
     // CONSIDER: Making the `None` value a symbol instead of `null`
     return new Maybe<T>(null)
   }
 
-  static some<T>(value: T): Maybe<T> {
+  static just<T>(value: T): Maybe<T> {
     return new Maybe(value)
   }
 
@@ -17,8 +17,8 @@ export class Maybe<T> implements Monad<T> {
     return result === null
       || result === undefined
       || (typeof result === "boolean" && !result)
-      ? Maybe.none()
-      : Maybe.some(result)
+      ? Maybe.nothing()
+      : Maybe.just(result)
   }
 
   static map2<A, B, C>(aOpt: Maybe<A>, bOpt: Maybe<B>, callback: (a: A, b: B) => C): Maybe<C> {
@@ -26,8 +26,13 @@ export class Maybe<T> implements Monad<T> {
     return aOpt.bind(a => bOpt.map(b => callback(a, b)))
   }
 
-  constructor(public value: T | null) {
+  constructor(public readonly value: T | null) {
     //
+  }
+
+  equals(other: Maybe<T>): boolean {
+    // TODO: Will need to call a smarter compare utility function, defined in `Util` to compare objects by structure.
+    return this.value === other.value
   }
 
   isNone(): boolean {
@@ -39,7 +44,7 @@ export class Maybe<T> implements Monad<T> {
   }
 
   getOrDo(): Unsafe<T> {
-    return this.expect("Attempted to unwrap none value")
+    return this.unwrap("Attempted to unwrap none value")
   }
 
   /**
@@ -50,9 +55,9 @@ export class Maybe<T> implements Monad<T> {
    * If the operation fails, an error with the given reason
    * as its message will be thrown.
    */
-  expect(reason: string): Unsafe<T> {
+  unwrap(assumption: string): Unsafe<T> {
     if (this.value === null)
-      throw new Error(reason)
+      throw new Error(assumption)
 
     return this.value
   }
@@ -70,12 +75,12 @@ export class Maybe<T> implements Monad<T> {
   }
 
   map<U>(callback: CallbackWithParam<T, U>): Maybe<U> {
-    return this.value === null ? Maybe.none() : Maybe.some(callback(this.value))
+    return this.value === null ? Maybe.nothing() : Maybe.just(callback(this.value))
   }
 
   bind<U>(callback: CallbackWithParam<T, Maybe<U>>): Maybe<U> {
     // TODO: Can't we base/abstract this off `map`?
-    return this.value === null ? Maybe.none() : callback(this.value)
+    return this.value === null ? Maybe.nothing() : callback(this.value)
   }
 
   do(callback: CallbackWithParam<T>): void {

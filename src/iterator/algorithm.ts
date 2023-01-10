@@ -83,14 +83,14 @@ export function binarySearchIterative<T>(iterable: T[], value: T): Maybe<number>
     const middle = (low + high) / 2
 
     if (iterable[middle] === value)
-      return Maybe.some(middle)
+      return Maybe.just(middle)
     else if (iterable[middle] < value)
       low = middle + 1
     else
       high = middle - 1
   }
 
-  return Maybe.none()
+  return Maybe.nothing()
 }
 
 export function makeArray<T>(size: number, callback: Callback<T>): T[] {

@@ -1,4 +1,4 @@
-import {CallbackWithParam} from "./util"
+import {CallbackWithParam} from "./util.js"
 
 export enum GraphProperty {
   Cyclic,

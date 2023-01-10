@@ -24,17 +24,17 @@ export class Interval {
 
   union(other: Interval): Maybe<Interval> {
     if (!this.overlapsWith(other))
-      return Maybe.none()
+      return Maybe.nothing()
 
     const from = Math.min(this.from, other.from)
     const to = Math.max(this.to, other.to)
 
-    return Maybe.some(new Interval(from, to))
+    return Maybe.just(new Interval(from, to))
   }
 
   difference(other: Interval): Maybe<Interval> {
     if (!this.overlapsWith(other))
-      return Maybe.none()
+      return Maybe.nothing()
 
     // TODO: Implement.
     unimplemented()

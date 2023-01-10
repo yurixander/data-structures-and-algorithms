@@ -51,14 +51,14 @@ export class Heap<T> {
 
   peek(): Maybe<T> {
     if (this.nodes.length === 0)
-      return Maybe.none()
+      return Maybe.nothing()
 
-    return Maybe.some(this.nodes[0])
+    return Maybe.just(this.nodes[0])
   }
 
   poll(): Maybe<T> {
     if (this.nodes.length === 0)
-      return Maybe.none()
+      return Maybe.nothing()
 
     const value = this.peek()
 

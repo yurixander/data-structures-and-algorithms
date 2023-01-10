@@ -5,7 +5,7 @@ import {CallbackWithParam, validateIndex} from "../util.js"
 export class SinglyLinkedList<T> implements ForwardIterable<SinglyLinkedList<T>> {
   constructor(
     public value: T,
-    public next: Maybe<SinglyLinkedList<T>> = Maybe.none()
+    public next: Maybe<SinglyLinkedList<T>> = Maybe.nothing()
   ) {
     //
   }
@@ -39,8 +39,8 @@ export class SinglyLinkedList<T> implements ForwardIterable<SinglyLinkedList<T>>
   reverseImperative(): SinglyLinkedList<T> {
     // REVISE: Cleanup returning of the new head.
 
-    let bufferOpt = Maybe.some<SinglyLinkedList<T>>(this)
-    const previous = Maybe.none<SinglyLinkedList<T>>()
+    let bufferOpt = Maybe.just<SinglyLinkedList<T>>(this)
+    const previous = Maybe.nothing<SinglyLinkedList<T>>()
     let newHead: SinglyLinkedList<T>
 
     while (bufferOpt.isSome()) {
@@ -65,9 +65,9 @@ export class SinglyLinkedList<T> implements ForwardIterable<SinglyLinkedList<T>>
 
     for (const node of list)
       if (predicate(node))
-        return Maybe.some(node)
+        return Maybe.just(node)
 
-    return Maybe.none()
+    return Maybe.nothing()
   }
 
   filter(predicate: CallbackWithParam<SinglyLinkedList<T>, boolean>): SinglyLinkedList<T>[] {
@@ -103,7 +103,7 @@ export class SinglyLinkedList<T> implements ForwardIterable<SinglyLinkedList<T>>
 
   collectIterative(): SinglyLinkedList<T>[] {
     const list: SinglyLinkedList<T>[] = []
-    let buffer: Maybe<SinglyLinkedList<T>> = Maybe.some(this)
+    let buffer: Maybe<SinglyLinkedList<T>> = Maybe.just(this)
 
     while (buffer.isSome()) {
       list.push(buffer.getOrDo())
@@ -124,12 +124,12 @@ export class SinglyLinkedList<T> implements ForwardIterable<SinglyLinkedList<T>>
   insertAfter(node: SinglyLinkedList<T>): void {
     const next = this.next
 
-    this.next = Maybe.some(node)
+    this.next = Maybe.just(node)
     node.next = next
   }
 
   detach() {
-    this.next = Maybe.none()
+    this.next = Maybe.nothing()
   }
 
   shallowClone(): SinglyLinkedList<T> {

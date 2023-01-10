@@ -1,7 +1,7 @@
 import chalk from "chalk"
-import {Either, MaybeOk} from "./monad/either.js"
-import {Maybe} from "./monad/maybe.js"
-import {IndexableObject, Callback, CallbackWithParam, zip, unimplemented} from "./util.js"
+import {Either, MaybeOk} from "../monad/either.js"
+import {Maybe} from "../monad/maybe.js"
+import {IndexableObject, Callback, CallbackWithParam, zip, unimplemented, Primitive, isArray, isObject, Comparable} from "../util.js"
 
 enum TestType {
   Unit
@@ -95,7 +95,8 @@ export class TestBuilder<T> {
     return Either.ok()
   }
 
-  private compareWithArray<U extends Array<never>>(expected: U): MaybeOk {
+  private compareWithArray<U extends unknown[]>(expected: U): MaybeOk {
+    // TODO: Use `isObject` helper.
     if (typeof this.value !== "object" || this.value === null || !Array.isArray(this.value))
       return Either.right(new Error("Value is not an array"))
     else if (this.value.length !== expected.length)
@@ -119,13 +120,23 @@ export class TestBuilder<T> {
 
   toEqual(expected: T): this {
     return this.to(() => {
-      if (Array.isArray(this.value))
-        // TODO: Using `any`.
-        return this.compareWithArray(expected as any)
+      if (isArray(this.value) && isArray(expected))
+        return this.compareWithArray(expected)
+      else if (isObject(this.value) && isObject(expected))
+        return this.compareWithObject(expected)
 
       return Either.if(
         this.value === expected,
         new Error(`Values are not equal ${this.difference(this.value, expected)}`)
+      )
+    })
+  }
+
+  toEqualComparable(other: T extends Comparable<T> ? T : never): this {
+    return this.to(() => {
+      return Either.if(
+        other.equals(other),
+        new Error(`Objects are not equal ${this.difference(this.value, other)}`)
       )
     })
   }
@@ -287,7 +298,7 @@ export class TestSuite {
     if (stack === undefined)
       return ""
 
-    const spacing = "        "
+    const spacing = " ".repeat(8)
 
     return spacing + stack
       .split("\n")
@@ -375,7 +386,7 @@ export class TestSuite {
       if (result.isRight()) {
         // CONSIDER: Combine log messages.
         console.log(`  ${chalk.red("✗")} ${test.name} (${runtimeColoredString})`)
-        failingTests.push([test.name, result.right().message])
+        failingTests.push([test.name, result.value.message])
       }
       else
         console.log(chalk.gray(`  ${chalk.green("✓")} ${test.name} (${runtimeColoredString})`))
