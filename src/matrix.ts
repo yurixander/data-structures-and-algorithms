@@ -1,6 +1,6 @@
+import {Nat} from "./int.js"
 import {Either, MayFail, Result} from "./monad/either.js"
 import {Maybe} from "./monad/maybe.js"
-import {Nat} from "./nat.js"
 import {validateIndex, cyclicRangeClamp} from "./util.js"
 
 export type MatrixForEachCallback<T, U = void> =

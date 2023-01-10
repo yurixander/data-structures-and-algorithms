@@ -1,3 +1,4 @@
+import {Index, Nat} from "../int.js"
 import {Maybe} from "../monad/maybe.js"
 import {CallbackWithParam, unimplemented} from "../util.js"
 
@@ -102,14 +103,14 @@ export class ForwardIterator<T> implements Iterable<T> {
     return result
   }
 
-  nth(n: number): Maybe<T> {
+  nth(index: Index): Maybe<T> {
     let result: Maybe<T> = Maybe.nothing()
-    let index = -1
+    let indexCounter = -1
 
     this.forEach(value => {
-      index++
+      indexCounter++
 
-      if (index === n) {
+      if (indexCounter === index.value) {
         result = Maybe.just(value)
 
         return false

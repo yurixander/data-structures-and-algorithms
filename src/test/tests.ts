@@ -1,4 +1,4 @@
-import {BinaryTree, TreeTraversalOrder} from "../tree/binaryTree.js"
+import {BinaryTree} from "../tree/binaryTree.js"
 import {DoublyLinkedList} from "../linkedList/doublyLinkedList.js"
 import {Either} from "../monad/either.js"
 import {Graph} from "../graph.js"
@@ -10,8 +10,8 @@ import {Stream} from "../stream.js"
 import {assert, assertThrows, expect, suite} from "./test.js"
 import {Maybe} from "../monad/maybe.js"
 import {State} from "../monad/state.js"
-import {Nat} from "../nat.js"
 import {Unsafe} from "../util.js"
+import {Int} from "../int.js"
 
 enum Size {
   Zero = 0,
@@ -45,12 +45,12 @@ abstract class Hydrate {
     return head!
   }
 
-  static option(value: number | null = null): Maybe<number> {
-    return new Maybe(value)
+  static maybe(value: number | null = null): Maybe<number> {
+    return value !== null ? Maybe.just(value) : Maybe.nothing()
   }
 
   static get matrix(): Unsafe<Matrix<number>> {
-    const size = Nat.from(3).unwrap("3 is a natural number")
+    const size = Int.unsigned(3).unwrap("3 is a natural number")
 
     return Matrix.unit<number>(size, size)
   }
@@ -65,7 +65,9 @@ abstract class Hydrate {
 }
 
 suite(SinglyLinkedList)
-  .test("constructor", () => expect(Hydrate.singlyLinkedList()).toBeInstanceOf(SinglyLinkedList))
+  .test("constructor", () =>
+    expect(Hydrate.singlyLinkedList()).toBeInstanceOf(SinglyLinkedList)
+  )
   .test(
     SinglyLinkedList.prototype.collectIterative,
     () => expect(Hydrate.singlyLinkedList(Size.Medium).collectIterative())
@@ -86,31 +88,50 @@ suite(SinglyLinkedList)
   )
   .test(
     SinglyLinkedList.prototype.findTail,
-    () => expect(Hydrate.singlyLinkedList(Size.Three).findTail().value).toEqual(Size.Three)
+    () => expect(Hydrate.singlyLinkedList(Size.Three).findTail().value)
+      .toEqual(Size.Three)
   )
   .test(
     SinglyLinkedList.prototype.count,
-    () => expect(Hydrate.singlyLinkedList().count()).toEqual(Size.One)
+    () => expect(Hydrate.singlyLinkedList().count())
+      .toEqual(Size.One)
   )
   .test(
     SinglyLinkedList.prototype.findMiddle,
-    () => expect(Hydrate.singlyLinkedList(Size.Large).findMiddle().value).toEqual(Size.Large / 2 + 1)
+    () => expect(Hydrate.singlyLinkedList(Size.Large).findMiddle().value)
+      .toEqual(Size.Large / 2 + 1)
   )
   .test(
     SinglyLinkedList.prototype.find,
-    () => assert(Hydrate.singlyLinkedList(Size.Large).find(_ => _.value === Size.Large / 2).isSome())
+    () => assert(
+      Hydrate.singlyLinkedList(Size.Large)
+        .find(_ => _.value === Size.Large / 2)
+        .isSome()
+    )
   )
   .test(
     SinglyLinkedList.prototype.find,
-    () => assert(Hydrate.singlyLinkedList(Size.Large).find(_ => _.value === Size.Large + 1).isNone())
+    () => assert(
+      Hydrate.singlyLinkedList(Size.Large)
+        .find(_ => _.value === Size.Large + 1)
+        .isNone()
+    )
   )
   .test(
     SinglyLinkedList.prototype.findNthNode,
-    () => expect(Hydrate.singlyLinkedList(Size.Large).findNthNode(50).getOrDo().value).toEqual(51)
+    () => expect(
+      Hydrate.singlyLinkedList(Size.Large)
+        .findNthNode(50)
+        .getOrDo()
+        .value
+    ).toEqual(51)
   )
   .test(
     SinglyLinkedList.prototype.filter,
-    () => expect(Hydrate.singlyLinkedList(Size.Medium).filter(_ => _.value >= 50)).toBeArrayOfLength(51)
+    () => expect(
+      Hydrate.singlyLinkedList(Size.Medium)
+        .filter(_ => _.value >= 50)
+    ).toBeArrayOfLength(51)
   )
   .test(
     SinglyLinkedList.prototype.deleteNthNode,
@@ -201,30 +222,30 @@ suite(Either)
 suite(Maybe)
   .test(
     Maybe.prototype.bind,
-    () => assert(Hydrate.option(testValue).bind(() => Maybe.nothing()).isNone())
+    () => assert(Hydrate.maybe(testValue).bind(() => Maybe.nothing()).isNone())
   )
   .test(
     Maybe.prototype.isSome,
-    () => assert(Hydrate.option(testValue).isSome())
+    () => assert(Hydrate.maybe(testValue).isSome())
   )
   .test(
     Maybe.prototype.isNone,
-    () => assert(Hydrate.option().isNone())
+    () => assert(Hydrate.maybe().isNone())
   )
   .test(Maybe.prototype.unwrapOrDefault,
-    () => expect(Hydrate.option().unwrapOrDefault(testValue)).toEqual(testValue)
+    () => expect(Hydrate.maybe().unwrapOrDefault(testValue)).toEqual(testValue)
   )
   .test(Maybe.prototype.getOrDo, () => [
-    assertThrows(() => Hydrate.option().getOrDo()),
-    expect(Hydrate.option(testValue).getOrDo()).toEqual(testValue)
+    assertThrows(() => Hydrate.maybe().getOrDo()),
+    expect(Hydrate.maybe(testValue).getOrDo()).toEqual(testValue)
   ])
   .test(Maybe.prototype.unwrap, () => [
-    assertThrows(() => Hydrate.option().unwrap("")),
-    expect(Hydrate.option(testValue).unwrap("")).toEqual(testValue)
+    assertThrows(() => Hydrate.maybe().unwrap("")),
+    expect(Hydrate.maybe(testValue).unwrap("")).toEqual(testValue)
   ])
   .test(Maybe.prototype.map, () => [
-    assert(Hydrate.option().map(() => testValue).isNone()),
-    expect(Hydrate.option(testValue).map(_ => _ + 1).getOrDo()).toEqual(testValue + 1)
+    assert(Hydrate.maybe().map(() => testValue).isNone()),
+    expect(Hydrate.maybe(testValue).map(_ => _ + 1).getOrDo()).toEqual(testValue + 1)
   ])
   .run()
 
@@ -241,9 +262,3 @@ suite(State)
     return expect(state.run(0)).toEqual([[], 3])
   })
   .run()
-
-const binaryTree = new BinaryTree("A")
-
-binaryTree.left = Maybe.just(new BinaryTree("B"))
-binaryTree.right = Maybe.just(new BinaryTree("C"))
-binaryTree.traverse(node => console.log(node.value), TreeTraversalOrder.InOrder)

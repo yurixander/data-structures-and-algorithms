@@ -14,7 +14,7 @@ export class Lazy<T> {
     this.cachedResult = Maybe.nothing()
   }
 
-  get value(): T {
+  evaluate(): T {
     if (this.cachedResult.isNone())
       this.cachedResult = Maybe.just(this.operation())
 

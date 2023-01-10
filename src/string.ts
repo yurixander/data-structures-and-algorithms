@@ -4,12 +4,12 @@ import {Lazy} from "./lazy.js"
 export type Char = string
 
 export class String {
-  static from(value: string): String {
+  static unit(value: string): String {
     return new String(value)
   }
 
   static fromChars(chars: Char[]): String {
-    return String.from(chars.join(""))
+    return String.unit(chars.join(""))
   }
 
   private chars: Char[] = []
@@ -35,7 +35,7 @@ export class String {
 
   // TODO: Should be moved to `algorithm`, and not be a method of `String`.
   isPalindrome(): boolean {
-    return this.isPalindromeMarker.value
+    return this.isPalindromeMarker.evaluate()
   }
 
   getWords(): string[] {

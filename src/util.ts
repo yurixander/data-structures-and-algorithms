@@ -16,9 +16,17 @@ export type Immutable<T> = {
 
 export type Primitive = string | number | boolean | null | undefined
 
-export enum AssertionMessage {
-  InvalidMatrixProportions = "Matrix proportions should be non-negative"
-}
+export type UnaryOperation<T> = (a: T) => T
+
+export type BinaryOperation<T> = (a: T, b: T) => T
+
+export const addOp: BinaryOperation<number> = (a, b) => a + b
+
+export const subtractOp: BinaryOperation<number> = (a, b) => a - b
+
+export const multiplyOp: BinaryOperation<number> = (a, b) => a * b
+
+export const divideOp: BinaryOperation<number> = (a, b) => a / b
 
 /**
  * A meta type representing a result of an operation may cause a
@@ -151,6 +159,13 @@ export function compose(...functions: Function[]): Function {
 }
 
 export interface Comparable<T> {
+  /**
+   * Determine whether the current object equals another of the same
+   * type, by comparing their properties.
+   *
+   * This is useful for when classes are to be structurally compared,
+   * instead of by reference.
+   */
   equals(other: T): boolean
 }
 
@@ -196,9 +211,8 @@ export function unsafeAssert(
   condition: boolean,
   reasoning: string
 ): Unsafe {
-  if (!condition) {
+  if (!condition)
     throw new Error(reasoning)
-  }
 }
 
 export function isProperNumber(number: number): boolean {

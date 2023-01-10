@@ -32,14 +32,14 @@ export class BinaryTree<T> {
       // Push all the nodes to the left of the current node.
       while (current !== null) {
         stack.push(current)
-        current = current.left.unwrapOrElse(null)
+        current = current.left.unwrapOrElse(null).value
       }
 
       const node = stack.pop()
 
       if (node !== undefined) {
         callback(node)
-        current = node.right.unwrapOrElse(null)
+        current = node.right.unwrapOrElse(null).value
       }
       else
         current = null

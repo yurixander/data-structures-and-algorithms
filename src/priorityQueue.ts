@@ -12,7 +12,7 @@ export class PriorityQueue<TValue> {
     // this.maxHeap = new Heap(value => [value[0], -value[1]], (a, b) => a[1] === b[1])
 
     // TODO: Finish implementing.
-    throw new Error("Not yet implemented")
+    unimplemented()
   }
 
   enqueue(value: TValue, priority: number) {

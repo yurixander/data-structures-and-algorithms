@@ -4,14 +4,15 @@ import {CallbackWithParam, validateIndex} from "../util.js"
 
 export class SinglyLinkedList<T> implements ForwardIterable<SinglyLinkedList<T>> {
   constructor(
-    public value: T,
+    public readonly value: T,
+    // REVISE: Not readonly.
     public next: Maybe<SinglyLinkedList<T>> = Maybe.nothing()
   ) {
     //
   }
 
   *[Symbol.iterator](): Iterator<SinglyLinkedList<T>> {
-    // OPTIMIZE: Collect as needed (recall it's a generator).
+    // OPTIMIZE: Collect as needed (recall it's a generator). Then, get rid of the `collect` methods, as they are already implemented in the iterator.
     const nodes = this.collectIterative()
 
     for (const node of nodes)

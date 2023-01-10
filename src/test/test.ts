@@ -1,7 +1,7 @@
 import chalk from "chalk"
 import {Either, MayFail} from "../monad/either.js"
 import {Maybe} from "../monad/maybe.js"
-import {IndexableObject, Callback, CallbackWithParam, zip, unimplemented, Primitive, isArray, isObject, Comparable} from "../util.js"
+import {IndexableObject, Callback, CallbackWithParam, zip, unimplemented, isArray, isObject, Comparable} from "../util.js"
 
 enum TestType {
   Unit
@@ -22,12 +22,18 @@ export function expect<T>(value: T): TestBuilder<T> {
   return new TestBuilder(value)
 }
 
-export function assert(condition: boolean, message?: string): TestBuilder<boolean> {
+export function assert(
+  condition: boolean,
+  message?: string
+): TestBuilder<boolean> {
   // TODO: Use message.
   return expect(condition).toEqual(true)
 }
 
-export function assertThrows(callback: () => unknown, cause?: string): TestBuilder<() => unknown> {
+export function assertThrows(
+  callback: () => unknown,
+  cause?: string
+): TestBuilder<() => unknown> {
   return expect(callback).to(_ => {
     try {
       _.value()
@@ -309,7 +315,10 @@ export class TestSuite {
 
   // REVIEW: Using `any`.
   // CONSIDER: Restricting target's name to `keyof typeof T`.
-  test(target: string | Function, callback: Callback<TestBuilder<any> | TestBuilder<any>[]>): this {
+  test(
+    target: string | Function,
+    callback: Callback<TestBuilder<any> | TestBuilder<any>[]>
+  ): this {
     let name = target instanceof Function ? target.name : target
 
     if (name === this.name)
