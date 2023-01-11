@@ -1,6 +1,7 @@
 import {Nat} from "./int.js"
-import {Either, MayFail, Result} from "./monad/either.js"
-import {Maybe} from "./monad/maybe.js"
+import {Either, Result} from "./monad/either.js"
+import {IO, log} from "./monad/io.js"
+import {Maybe, MayFail} from "./monad/maybe.js"
 import {validateIndex, cyclicRangeClamp} from "./util.js"
 
 export type MatrixForEachCallback<T, U = void> =
@@ -129,11 +130,23 @@ export class Matrix<T> {
     return this
   }
 
-  map<U>(callback: MatrixForEachCallback<T, U>): Matrix<U> {
+  transform<U>(callback: MatrixForEachCallback<T, U>): Matrix<U> {
+    // REVIEW: Any way to combine this with `map`?
+
     const result = new Matrix<U>(this.rows, this.columns)
 
     this.forEach((value, row, column) =>
       result.values[row][column] = callback(value, row, column)
+    )
+
+    return result
+  }
+
+  map<U>(callback: MatrixForEachCallback<T, U>): U[] {
+    const result: U[] = []
+
+    this.forEach((value, row, column) =>
+      result.push(callback(value, row, column))
     )
 
     return result
@@ -156,17 +169,15 @@ export class Matrix<T> {
     return true
   }
 
-  display(): this {
-    this.forEach((value, row, column) =>
-      console.log(`[${row}:${column}] => ${value}`)
+  display(): IO[] {
+    return this.map((value, row, column) =>
+      log(`[${row}:${column}] => ${value}`)
     )
-
-    return this
   }
 
   resize(rows: number, columns: number): MayFail {
     if (rows < 1 || columns < 1 || !Number.isInteger(columns))
-      return Either.error(`Cannot resize matrix: Dimensions '${rows}x${columns}' are invalid`)
+      return Maybe.error(`Cannot resize matrix: Dimensions '${rows}x${columns}' are invalid`)
 
     this.values.length = rows
 
@@ -175,7 +186,7 @@ export class Matrix<T> {
 
     // TODO: Need to resize inner columns.
 
-    return Either.pass()
+    return Maybe.ok()
   }
 
   // performOperation()

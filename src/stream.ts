@@ -46,10 +46,10 @@ export class Stream<T> {
     const result: T[] = []
 
     while (count !== amount && bufferOpt.isSome()) {
-      const buffer = bufferOpt.getOrDo()
+      const buffer = bufferOpt.do()
 
       result.push(buffer.value)
-      bufferOpt = Maybe.just(buffer.next.getOrDo()())
+      bufferOpt = Maybe.just(buffer.next.do()())
       count++
     }
 
@@ -59,7 +59,7 @@ export class Stream<T> {
   // BUG: Somehow, for the last stream node, it is `null`.
   take(amount: number): Stream<T> {
     const next = this.next.isSome() && amount > 1
-      ? Maybe.just(() => this.next.getOrDo()().take(amount - 1))
+      ? Maybe.just(() => this.next.do()().take(amount - 1))
       : Maybe.nothing<Callback<Stream<T>>>()
 
     return new Stream(this.value, next)
@@ -67,7 +67,7 @@ export class Stream<T> {
 
   toArrayRecursive(): T[] {
     if (this.next.isSome())
-      return [this.value, ...this.next.getOrDo()().toArrayRecursive()]
+      return [this.value, ...this.next.do()().toArrayRecursive()]
 
     return []
   }
@@ -77,7 +77,7 @@ export class Stream<T> {
     let nodeOpt: Stream<T> = this
 
     while (nodeOpt.next.isSome()) {
-      const node = nodeOpt.next.getOrDo()()
+      const node = nodeOpt.next.do()()
 
       result.push(node.value)
       nodeOpt = node

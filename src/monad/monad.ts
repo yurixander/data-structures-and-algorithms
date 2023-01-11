@@ -1,161 +1,118 @@
-import {Either} from "./either.js"
-import {unimplemented} from "../util.js"
+import {Unsafe} from "../util.js"
 
-export interface Monad<T> {
+export interface Foldable<T> {
+  fold<U>(reducer: (accumulator: U, value: T) => U, initial: U): U
+}
+
+/**
+ * A monoid is structure with a binary operation that is associative and has an
+ * identity element.
+ *
+ * @example
+ * const sumMonoid = new Monoid<number>({
+ *   identity: 0,
+ *   concat: (a, b) => a + b
+ * })
+ *
+ * @example
+ * const stringMonoid = new Monoid<string>({
+ *   identity: "",
+ *   concat: (a, b) => a + b
+ * })
+ *
+ * @example
+ * const arrayMonoid = new Monoid<unknown[]>({
+ *   identity: [],
+ *   concat: (a, b) => a.concat(b)
+ * })
+ */
+export interface Monoid<T> {
+  /**
+   * The identity element of the binary operation, which when combined with any
+   * other value of the set, it should return the other value itself.
+   */
+  readonly identity: T
+
+  /**
+   * Defines the binary operation of the monoid, which must be associative,
+   * meaning that the order in which the operation is applied doesn't affect
+   * the result.
+   */
+  concat(a: T, b: T): T
+}
+
+// REVIEW: This might help cleanup some logic when accepting transformers (for example an abstract mapper, we can specify that it extends `Functor<T>`, then we can call `.transform(f)` on it).
+
+export interface EndoFunctor<T> {
   /**
    * Transform the contained value (if any) by applying a given function.
-   * A new instance of the monad will be returned, containing the (possibly)
+   * A new instance of the functor will be returned, containing the (possibly)
    * transformed value.
+   *
+   * @param f The function to apply to the contained value (if any).
+   * @returns A new instance of the functor, containing the (possibly)
+   * transformed value.
+   * @example Maybe.just(1).transform(x => x + 1) // Maybe.just(2)
    */
-  map<U>(f: (value: T) => U): Monad<U>
+  transform(f: (value: T) => T): EndoFunctor<T>
+}
 
+/**
+ * Represents a value or container that if present, may be transformed into
+ * a different state.
+ */
+export interface Functor<T> extends EndoFunctor<T> {
+  transform<U>(f: (value: T) => U): Functor<U>
+}
+
+/**
+ * A monad is a container that abstracts a value or action.
+ *
+ * It is a *functor*, which means it can be mapped over, and it is a monoid,
+ * which means it can be combined with other monads.
+ *
+ * This is useful for abstracting values or actions that may or may not be
+ * present, or that may fail.
+ *
+ * @param T The type of the value or action abstracted by this monad.
+ */
+export interface Monad<T> extends Functor<T> {
   /**
-   * Chains this monad with another, creating an abstract
-   * sequence.
+   * Chain the monad with another, creating an abstract sequence.
+   *
+   * The callback function `f` is invoked with the value contained by this
+   * monad. The return value of `f` is then flattened (combined into a single
+   * monad) and used to create a new resulting monad.
+   *
+   * This is equivalent to `flatMap`, `>==`, `then`, or `andThen` in other
+   * languages.
+   *
+   * @param f A function that takes the value contained by this monad and
+   * returns a monad.
+   * @returns A new monad containing the value of the monad returned by
+   * `f`.
+   * @example Maybe.just(1).bind(x => Maybe.just(x + 1)) // Maybe.just(2)
    */
   bind<U>(f: (value: T) => Monad<U>): Monad<U>
 
   /**
    * Get or execute the value or action abstracted by this monad.
+   *
+   * ## Warning
+   *
+   * This operation is generally unsafe and may evaluate side-effects
+   * encapsulated by the monad. Therefore, it should be abstracted away
+   * and preferably invoked in a centralized location. The benefit of
+   * this is that such location may then be tracked back to if problems
+   * occur.
+   *
+   * A general rule of thumb is to only invoke this method in the main
+   * function of a program.
+   *
+   * @example IO.lift(() => console.log("Hello, world!")).do()
    */
-  getOrDo(): T
+  do?(): Unsafe<T>
 }
-
-type Result<T> = Either<T, Error>
-
-export type ParseFn<T> = (input: string) => Result<[T, string]>
-
-// class Parser2<T> implements Monad<T> {
-//   static lift<T>(parse: ParseFn<T>): Parser<T> {
-//     return new Parser(parse)
-//   }
-
-//   private parse: ParseFn<T>
-
-//   private constructor(parse: ParseFn<T>) {
-//     this.parse = parse
-//   }
-
-//   public map<U>(f: (value: T) => U): Parser<U> {
-//     return new Parser(input => {
-//       const result = this.parse(input)
-
-//       if (!result)
-//         return null
-
-//       return [f(result[0]), result[1]]
-//     })
-//   }
-
-//   map2<U>(f: (value: T) => U): Parser<U> {
-//     return Parser.lift(input =>
-//       this.parse(input).mapLeft(result => [f(result[0]), result[1]])
-//     ) as any
-//   }
-
-//   public bind<U>(f: (value: T) => Parser<U>): Parser<U> {
-//     return new Parser((input) => {
-//       const result = this.parse(input)
-
-//       if (!result)
-//         return null
-
-//       return f(result[0]).parse(result[1])
-//     })
-//   }
-
-//   bind2<U>(f: (value: T) => Parser<U>): Parser<U> {
-//     return Parser.lift(input => {
-//       const result = this.parse(input)
-
-//       if (result === null)
-//         return null
-
-//       return f(result[0]).parse(result[1])
-//     })
-//   }
-
-//   get(): ParseFn<T> {
-//     return this.parse
-//   }
-// }
-
-export class Parser<T> implements Monad<T> {
-  // static sequence(...parsers: Parser<unknown>[]): Parser<unknown> {
-  //   return parsers.reduce((acc, parser) => acc.bind((values) => parser.map((value) => [...values, value])), Parser.lift([]))
-  // }
-
-  static sequence2<A, B>(a: Parser<A>, b: Parser<B>): Monad<[A, B]> {
-    // TODO: Implement.
-    unimplemented()
-  }
-
-  readonly parse: (input: string) => [T, string] | null
-
-  constructor(parse: (input: string) => [T, string] | null) {
-    this.parse = parse
-  }
-
-  public map<U>(f: (value: T) => U): Parser<U> {
-    return new Parser((input) => {
-      const result = this.parse(input)
-      if (!result) {
-        return null
-      }
-      return [f(result[0]), result[1]]
-    })
-  }
-
-  public bind<U>(f: (value: T) => Parser<U>): Parser<U> {
-    return new Parser((input) => {
-      const result = this.parse(input)
-      if (!result) {
-        return null
-      }
-      return f(result[0]).parse(result[1])
-    })
-  }
-
-  getOrDo(): T {
-    unimplemented()
-  }
-}
-
-const stringParser = new Parser(input => [1, input])
-
-const numberParser = new Parser(input => ["hello", input])
-
-function sequence<T>(parsers: Parser<T>[]): Parser<T[]> {
-  return new Parser(input => {
-    // Create an empty array to store the results
-    const results: T[] = []
-
-    // Loop through each of the parsers and apply it to the input
-    let remainingInput = input
-
-    for (const parser of parsers) {
-      // Apply the parser and get the result and the remaining input
-      const result = parser.parse(remainingInput)
-
-      if (result === null)
-        return null
-
-      // Add the result to the array and update the remaining input
-      results.push(result[0])
-      remainingInput = result[1]
-    }
-
-    // Return the array of results and the remaining input
-    return [results, remainingInput]
-  })
-}
-
-// const seqParser = Parser.sequence()
-
-// Define a parser combinator that takes two parsers and returns a new parser
-// that applies the first parser, followed by the second parser, and returns
-// the result of the second parser.
-// const seq = functi<A, B> (parser1: Parser<A>, parser2: Parser<B>
 
 export class State<S, T> implements Monad<T> {
   static lift<S, T>(f: (state: S) => [S, T]): State<S, T> {
@@ -172,7 +129,7 @@ export class State<S, T> implements Monad<T> {
     this.value = undefined as T
   }
 
-  map<U>(f: (value: T) => U): State<S, U> {
+  transform<U>(f: (value: T) => U): State<S, U> {
     return State.lift<S, U>(state => {
       const [nextState, result] = this.f(state)
 
@@ -188,7 +145,7 @@ export class State<S, T> implements Monad<T> {
     })
   }
 
-  getOrDo(): T {
+  do(): T {
     return this.value
   }
 
@@ -199,4 +156,24 @@ export class State<S, T> implements Monad<T> {
   run(initialState: S): [S, T] {
     return this.f(initialState)
   }
+}
+
+export class Arrow<T, U> {
+  public readonly run: (value: T) => U
+
+  constructor(runner: (value: T) => U) {
+    this.run = runner
+  }
+
+  map(f: (value: T) => U): Arrow<T, U> {
+    return new Arrow(value => f(value))
+  }
+
+  compose<X>(other: Arrow<U, X>): Arrow<T, X> {
+    return new Arrow(value => other.run(this.run(value)))
+  }
+}
+
+export function id<T>(value: T): T {
+  return value
 }

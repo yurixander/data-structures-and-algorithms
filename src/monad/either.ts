@@ -3,27 +3,9 @@ import {Maybe} from "./maybe.js"
 
 export type Result<T> = Either<T, Error>
 
-export type MayFail<T = Error> = Either<void, T>
-
 export class Either<L, R> {
-  static ok<T = void>(value: T): Result<T> {
-    return Either.left(value)
-  }
-
-  static error<T = void>(message: string): Result<T> {
+  static error<T>(message: string): Result<T> {
     return Either.right(new Error(message))
-  }
-
-  static pass(): MayFail {
-    return Either.ok(undefined)
-  }
-
-  static passIf(condition: boolean, error: Error): MayFail {
-    return condition ? Either.pass() : Either.right(error)
-  }
-
-  static assert(condition: boolean, errorMessage: string): MayFail {
-    return Either.passIf(condition, new Error(errorMessage))
   }
 
   static left<T, U>(value: T): Either<T, U> {

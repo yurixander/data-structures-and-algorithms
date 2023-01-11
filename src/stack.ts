@@ -17,7 +17,7 @@ export class Stack<T> {
   }
 
   top(): Maybe<T> {
-    return this.tailOpt.map(tail => tail.value)
+    return this.tailOpt.transform(tail => tail.value)
   }
 
   push(value: T): void {
@@ -26,7 +26,8 @@ export class Stack<T> {
     if (this.tailOpt.isNone())
       this.tailOpt = Maybe.just(node)
     else {
-      const tail = this.tailOpt.getOrDo()
+      // REVISE: Use `unwrap` instead.
+      const tail = this.tailOpt.do()
 
       tail.next = Maybe.just(node)
       node.previous = this.tailOpt
@@ -40,10 +41,10 @@ export class Stack<T> {
     if (this.tailOpt.isNone())
       return Maybe.nothing()
 
-    const tail = this.tailOpt.getOrDo()
+    const tail = this.tailOpt.do()
 
     if (tail.previous.isSome()) {
-      const nextTail = tail.previous.getOrDo()
+      const nextTail = tail.previous.do()
 
       nextTail.next = Maybe.nothing()
       this.tailOpt = Maybe.just(nextTail)

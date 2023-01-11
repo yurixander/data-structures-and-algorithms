@@ -1,7 +1,8 @@
 import chalk from "chalk"
-import {Either, MayFail} from "../monad/either.js"
-import {Maybe} from "../monad/maybe.js"
+import {Either} from "../monad/either.js"
+import {Maybe, MayFail} from "../monad/maybe.js"
 import {IndexableObject, Callback, CallbackWithParam, zip, unimplemented, isArray, isObject, Comparable} from "../util.js"
+import {IO, log} from "../monad/io.js"
 
 enum TestType {
   Unit
@@ -11,6 +12,12 @@ type Test = {
   type: TestType,
   name: string,
   executor?: Callback<MayFail>
+}
+
+type TestResult = {
+  result: Either<MayFail, Error>,
+  runtime: number,
+  logs: IO[]
 }
 
 export function suite(target: IndexableObject | Function): TestSuite {
@@ -38,16 +45,16 @@ export function assertThrows(
     try {
       _.value()
 
-      return Either.error("No error was thrown")
+      return Maybe.error("No error was thrown")
     }
     catch (error) {
       // REVISE: Simplify.
       if (cause !== undefined && !(error instanceof Error))
-        return Either.error("Expected error but caught different object")
+        return Maybe.error("Expected error but caught different object")
       else if (cause !== undefined && error instanceof Error)
-        return Either.assert(error.cause !== cause, "Error cause mismatch")
+        return Maybe.assert(error.cause !== cause, "Error cause mismatch")
 
-      return Either.pass()
+      return Maybe.ok()
     }
   })
 }
@@ -93,33 +100,33 @@ export class TestBuilder<T> {
   private compareElements<T>(arrayA: T[], arrayB: T[]): MayFail {
     for (const [a, b] of zip(arrayA, arrayB))
       // TODO: Add an equality helper for deep comparisons.
-      if (a.isNone() || b.isNone() || a.getOrDo() !== b.getOrDo())
+      if (a.isNone() || b.isNone() || a.do() !== b.do())
         // TODO: Need a more descriptive message. Perhaps compare diffs?
         // BUG: Cannot unwrap if it is none. Temporarily passing in the entire object.
-        return Either.error(`Element differs ${this.difference(a, b)}`)
+        return Maybe.error(`Element differs ${this.difference(a, b)}`)
 
-    return Either.pass()
+    return Maybe.ok()
   }
 
   private compareWithArray<T extends unknown[]>(expected: T): MayFail {
     // TODO: Use `isObject` helper.
     if (typeof this.value !== "object" || this.value === null || !Array.isArray(this.value))
-      return Either.error("Value is not an array")
+      return Maybe.error("Value is not an array")
     else if (this.value.length !== expected.length)
-      return Either.error(`Array lengths differ ${this.difference(this.value.length, expected.length)}`)
+      return Maybe.error(`Array lengths differ ${this.difference(this.value.length, expected.length)}`)
 
     return this.compareElements(this.value, expected)
   }
 
   private compareWithObject<T extends object>(object: T): MayFail {
     if (typeof this.value !== "object" || this.value === null)
-      return Either.error("Value is not an object")
+      return Maybe.error("Value is not an object")
 
     const valueKeys = Object.keys(this.value)
     const objectKeys = Object.keys(object)
 
     if (valueKeys.length !== objectKeys.length)
-      return Either.error("Objects differ in key lengths")
+      return Maybe.error("Objects differ in key lengths")
 
     return this.compareElements(valueKeys, objectKeys)
   }
@@ -131,7 +138,7 @@ export class TestBuilder<T> {
       else if (isObject(this.value) && isObject(expected))
         return this.compareWithObject(expected)
 
-      return Either.assert(
+      return Maybe.assert(
         this.value === expected,
         `Values are not equal ${this.difference(this.value, expected)}`
       )
@@ -140,7 +147,7 @@ export class TestBuilder<T> {
 
   toEqualComparable(other: T extends Comparable<T> ? T : never): this {
     return this.to(() => {
-      return Either.assert(
+      return Maybe.assert(
         other.equals(other),
         `Objects are not equal ${this.difference(this.value, other)}`
       )
@@ -148,11 +155,11 @@ export class TestBuilder<T> {
   }
 
   toBeTruthy(): this {
-    return this.assert(() => !!this.value, new Error("Value is not truthy"))
+    return this.assert(() => !!this.value, "Value is not truthy")
   }
 
   toBeFalsy(): this {
-    return this.assert(() => !this.value, new Error("Value is not falsy"))
+    return this.assert(() => !this.value, "Value is not falsy")
   }
 
   toBeOfType(expected: Type): this {
@@ -160,24 +167,24 @@ export class TestBuilder<T> {
 
     return this.assert(
       () => actual === expected,
-      new Error(`Type mismatch ${this.difference(actual, expected)}`)
+      `Type mismatch ${this.difference(actual, expected)}`
     )
   }
 
   toBeInstanceOf(other: Function): this {
-    return this.assert(() => this.value instanceof other, new Error("Instance mismatch"))
+    return this.assert(() => this.value instanceof other, "Instance mismatch")
   }
 
   toBeNull(): this {
-    return this.assert(() => this.value === null, new Error("Value is not null"))
+    return this.assert(() => this.value === null, "Value is not null")
   }
 
   toBeArrayOfLength(length: number): this {
     return this.to(() => {
       if (!Array.isArray(this.value))
-        return Either.error("Value is not an array")
+        return Maybe.error("Value is not an array")
 
-      return Either.assert(
+      return Maybe.assert(
         this.value.length === length,
         `Array length differs from expected size ${this.difference(this.value.length, length)}`
       )
@@ -187,11 +194,11 @@ export class TestBuilder<T> {
   toBeOption(isSome: boolean): this {
     return this.to(() => {
       if (!(this.value instanceof Maybe))
-        return Either.error("Value is not an instance of Option")
+        return Maybe.error("Value is not an instance of Option")
 
       const condition = this.value.isSome() === isSome
 
-      return Either.assert(condition, `Value is ${condition ? "some" : "none"}`)
+      return Maybe.assert(condition, `Value is ${condition ? "some" : "none"}`)
     })
   }
 
@@ -206,27 +213,27 @@ export class TestBuilder<T> {
   toMatchPartial(partial: Partial<T>): this {
     return this.to(() => {
       if (typeof this.value !== "object" || this.value === null)
-        return Either.error(`Value is not an object ${this.difference(TestBuilder.determineTypeOf(this.value), "object")}`)
+        return Maybe.error(`Value is not an object ${this.difference(TestBuilder.determineTypeOf(this.value), "object")}`)
 
       const object = this.value as {[_: string]: unknown}
       const partialKeys = Object.keys(partial)
       const valueKeys = Object.keys(this.value)
 
       if (partialKeys.length > valueKeys.length)
-        return Either.error(`Partial object has more keys than value ${this.difference(valueKeys.length, partialKeys.length)}`)
+        return Maybe.error(`Partial object has more keys than value ${this.difference(valueKeys.length, partialKeys.length)}`)
 
       for (const partialKey in partial) {
         const objectValue = object[partialKey]
         const partialValue = partial[partialKey]
 
         if (objectValue === undefined)
-          return Either.error(`Value is missing key, or property is undefined: ${partialKey} ${this.difference(undefined, partialValue)}`)
+          return Maybe.error(`Value is missing key, or property is undefined: ${partialKey} ${this.difference(undefined, partialValue)}`)
         // TODO: Use deep comparison.
         else if (objectValue !== partialValue)
-          return Either.error(`Object property mismatch: ${partialKey} ${this.difference(objectValue, partialValue)}`)
+          return Maybe.error(`Object property mismatch: ${partialKey} ${this.difference(objectValue, partialValue)}`)
       }
 
-      return Either.pass()
+      return Maybe.ok()
     })
   }
 
@@ -241,9 +248,9 @@ export class TestBuilder<T> {
 
   assert(
     condition: CallbackWithParam<this, boolean>,
-    error: Error = new Error("Unmet condition")
+    errorMessage = "Unmet condition"
   ): this {
-    return this.to(() => Either.passIf(condition(this), error))
+    return this.to(() => Maybe.okIf(condition(this), new Error(errorMessage)))
   }
 
   not(matcher: Matcher<T>): this {
@@ -261,11 +268,11 @@ export class TestBuilder<T> {
     for (const test of this.chain) {
       const result = test(this)
 
-      if (result.isRight())
+      if (result.isSome())
         return result
     }
 
-    return Either.pass()
+    return Maybe.ok()
   }
 }
 
@@ -340,10 +347,47 @@ export class TestSuite {
     return this
   }
 
-  // REVISE: This isn't pure (IO effect).
-  run(): void {
+  private runTest(test: Test): TestResult {
+    if (test.executor === undefined)
+      return {
+        result: Either.right(new Error("Test executor is undefined")),
+        runtime: 0,
+        logs: []
+      }
+
+    const logs: IO[] = []
+    const startTime = performance.now()
+
+    const result = Either.try(test.executor).mapRight(error =>
+      new Error(`${error.message}\n${this.beautifyErrorStack(error.stack)}`)
+    )
+
+    const runtime = Math.floor(performance.now() - startTime)
+    const testRuntimeString = `${runtime}ms`
+
+    const runtimeColoredString =
+      // REVISE: Hard-coded limit. Perhaps taking it in as a default option would be better.
+      runtime >= 100 ? chalk.red(testRuntimeString) : testRuntimeString
+
+    if (result.isRight())
+      // CONSIDER: Combine log messages.
+      logs.push(log(`  ${chalk.red("✗")} ${test.name} (${runtimeColoredString})`))
+    else
+      logs.push(log(chalk.gray(`  ${chalk.green("✓")} ${test.name} (${runtimeColoredString})`)))
+
+    return {
+      result,
+      runtime,
+      logs
+    }
+  }
+
+  // REVISE: Decouple logic a bit further.
+  run(): IO[] {
     const totalTests = this.tests.length + this.todos.size
     const registeredTests = this.tests.length
+
+    // REVISE: Possible division by zero.
     const coverageRatio = Math.floor(registeredTests / totalTests * 100)
 
     let coverageColor: (_: string) => string
@@ -357,60 +401,46 @@ export class TestSuite {
     else
       coverageColor = chalk.green
 
-    console.log(this.name, coverageColor(`(${coverageRatio}% coverage)`))
-
-    let overallRuntime = 0
+    let suiteRuntime = 0
     const failingTests: [string, string][] = []
     const sortedTests = [...this.tests].sort((a, b) => a.name > b.name ? 1 : -1)
+    const suiteLogs: IO[] = []
+    const addLog = (...messages: string[]) => suiteLogs.push(log(...messages))
+
+    addLog(this.name, coverageColor(`(${coverageRatio}% coverage)`))
 
     for (const todoName of this.todos)
-      console.log(`  ${chalk.yellow("⋈")} ` + chalk.gray(`todo: ${todoName}`))
+      // REVISE: Hard-coded symbols.
+      addLog(`  ${chalk.yellow("⋈")} ` + chalk.gray(`todo: ${todoName}`))
 
     for (const test of sortedTests) {
       if (test.executor === undefined)
         continue
 
-      let result: MayFail
-      const startTime = performance.now()
+      const {result, runtime: testRuntime, logs: testLogs} = this.runTest(test)
 
-      try {
-        result = test.executor()
-      }
-      catch (error) {
-        if (error instanceof Error)
-          result = Either.error(`Uncaught exception: ${error.message}\n${this.beautifyErrorStack(error.stack)}`)
-        else
-          result = Either.error("Uncaught exception, which is not an error object")
-      }
+      suiteRuntime += testRuntime
+      suiteLogs.push(...testLogs)
 
-      const runtime = Math.floor(performance.now() - startTime)
-      const runtimeString = `${runtime}ms`
-
-      overallRuntime += runtime
-
-      const runtimeColoredString =
-        // REVISE: Hard-coded limit. Perhaps taking it in as a default option would be better.
-        runtime >= 100 ? chalk.red(runtimeString) : runtimeString
-
-      if (result.isRight()) {
-        // CONSIDER: Combine log messages.
-        console.log(`  ${chalk.red("✗")} ${test.name} (${runtimeColoredString})`)
+      if (result.isRight())
         failingTests.push([test.name, result.value.message])
-      }
-      else
-        console.log(chalk.gray(`  ${chalk.green("✓")} ${test.name} (${runtimeColoredString})`))
     }
 
     // Add a newline to separate output.
-    console.log()
+    addLog("")
 
     if (failingTests.length === 0)
-      console.log(" ", chalk.bgGreen.black(" PASS "), chalk.gray(`${overallRuntime}ms`))
+      addLog(" ", chalk.bgGreen.black(" PASS "), chalk.gray(`${suiteRuntime}ms`))
     else {
-      console.log(" ", chalk.bgRed.black(" * FAIL "), chalk.gray(`${overallRuntime}ms`))
-      failingTests.forEach(failingTest => console.log(`    ${chalk.red("*")} ${failingTest[0]}: ${failingTest[1]}`))
+      addLog(" ", chalk.bgRed.black(" * FAIL "), chalk.gray(`${suiteRuntime}ms`))
+
+      failingTests.forEach(failingTest =>
+        addLog(`    ${chalk.red("*")} ${failingTest[0]}: ${failingTest[1]}`)
+      )
     }
 
-    console.log()
+    addLog("")
+
+    return suiteLogs
   }
 }

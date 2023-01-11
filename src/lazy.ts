@@ -18,7 +18,7 @@ export class Lazy<T> {
     if (this.cachedResult.isNone())
       this.cachedResult = Maybe.just(this.operation())
 
-    return this.cachedResult.getOrDo()
+    return this.cachedResult.do()
   }
 }
 

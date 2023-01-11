@@ -4,6 +4,8 @@ import {Either} from "./either.js"
 
 type Falsy = undefined | null | false
 
+export type MayFail = Maybe<Error>
+
 // TODO: To prevent problemss, `Maybe<undefined` should be statically forbidden.
 /**
  * A monad encapsulating a value that may be present or absent.
@@ -57,7 +59,23 @@ export class Maybe<T> implements Monad<T>, Comparable<Maybe<T>> {
     callback: (a: A, b: B) => C
   ): Maybe<C> {
     // CONSIDER: Using the generalized `map2` implementation.
-    return maybeA.bind(a => maybeB.map(b => callback(a, b)))
+    return maybeA.bind(a => maybeB.transform(b => callback(a, b)))
+  }
+
+  static ok(): MayFail {
+    return Maybe.nothing()
+  }
+
+  static error(message: string): MayFail {
+    return Maybe.just(new Error(message))
+  }
+
+  static okIf(condition: boolean, error: Error): MayFail {
+    return condition ? Maybe.ok() : Maybe.just(error)
+  }
+
+  static assert(condition: boolean, errorMessage: string): MayFail {
+    return Maybe.okIf(condition, new Error(errorMessage))
   }
 
   private constructor(
@@ -86,7 +104,7 @@ export class Maybe<T> implements Monad<T>, Comparable<Maybe<T>> {
     return !this.isSome()
   }
 
-  getOrDo(): Unsafe<T> {
+  do(): Unsafe<T> {
     return this.unwrap("Attempted to unwrap none value")
   }
 
@@ -119,7 +137,7 @@ export class Maybe<T> implements Monad<T>, Comparable<Maybe<T>> {
       : Either.right(otherValue)
   }
 
-  map<U>(callback: CallbackWithParam<T, U>): Maybe<U> {
+  transform<U>(callback: CallbackWithParam<T, U>): Maybe<U> {
     return this.value !== undefined
       ? Maybe.just(callback(this.value))
       : Maybe.nothing()
@@ -130,8 +148,8 @@ export class Maybe<T> implements Monad<T>, Comparable<Maybe<T>> {
     return this.value !== undefined ? callback(this.value) : Maybe.nothing()
   }
 
-  do(callback: CallbackWithParam<T>): void {
+  apply(callback: CallbackWithParam<T>): void {
     if (this.isSome())
-      callback(this.getOrDo())
+      callback(this.do())
   }
 }

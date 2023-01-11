@@ -69,7 +69,7 @@ export class Int<TSigned extends true | false = true> {
   }
 
   divideInt(other: Int): Maybe<Int<TSigned>> {
-    return this.divide(other).map(result => result.floor())
+    return this.divide(other).transform(result => result.floor())
   }
 
   floor(): Int<TSigned> {

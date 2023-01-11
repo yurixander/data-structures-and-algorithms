@@ -22,7 +22,7 @@ export class IO<T = void> implements Monad<T> {
     this.effect = effect
   }
 
-  map<U>(f: (value: T) => U): IO<U> {
+  transform<U>(f: (value: T) => U): IO<U> {
     return IO.lift(() => f(this.effect()))
   }
 
@@ -30,13 +30,15 @@ export class IO<T = void> implements Monad<T> {
     return f(this.effect())
   }
 
-  getOrDo(): T {
+  do(): T {
     return this.effect()
   }
 }
 
-export function printLn(text: string): IO {
-  return IO.lift(() => console.log(text))
+log("hi").do()
+
+export function log(...messages: string[]): IO {
+  return IO.lift(() => console.log(...messages))
 }
 
 export function prompt(message?: string, fallback?: string): IO<Maybe<string>> {
@@ -55,12 +57,12 @@ export function readLn(query: string): IO<Future<string>> {
 
 function main() {
   const curryPrintLn = (text: string) =>
-    () => printLn(text)
+    () => log(text)
 
-  printLn("hello world")
+  log("hello world")
     .bind(curryPrintLn("hi"))
     .bind(curryPrintLn("foo"))
     .bind(curryPrintLn("how are you doing today?"))
     .bind(() => readLn("write your name:"))
-    .getOrDo()
+    .do()
 }

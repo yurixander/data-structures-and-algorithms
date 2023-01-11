@@ -26,7 +26,7 @@ export class String {
   }
 
   iter(): ForwardIterator<Char> {
-    return new ForwardIterator(this.chars)
+    return ForwardIterator.lift(this.chars)
   }
 
   toString(): string {
@@ -50,3 +50,8 @@ export class String {
     return new String(this.chars.map(callback).join(""))
   }
 }
+
+
+String.unit("hello there")
+  .iter()
+  .into

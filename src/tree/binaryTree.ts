@@ -47,9 +47,9 @@ export class BinaryTree<T> {
   }
 
   private inOrderTraversalRecursive(callback: CallbackWithParam<BinaryTree<T>>) {
-    this.left.do(left => left.inOrderTraversalRecursive(callback))
+    this.left.apply(left => left.inOrderTraversalRecursive(callback))
     callback(this)
-    this.right.do(right => right.inOrderTraversalRecursive(callback))
+    this.right.apply(right => right.inOrderTraversalRecursive(callback))
   }
 
   *[Symbol.iterator]() {
@@ -95,10 +95,10 @@ export class BinaryTree<T> {
       nodes.push(node)
 
       if (node.left.isSome())
-        queue.push(node.left.getOrDo())
+        queue.push(node.left.do())
 
       if (node.right.isSome())
-        queue.push(node.right.getOrDo())
+        queue.push(node.right.do())
     }
 
     return nodes
@@ -111,10 +111,10 @@ export class BinaryTree<T> {
       result.push(node)
 
       if (node.left.isSome())
-        go(node.left.getOrDo())
+        go(node.left.do())
 
       if (node.right.isSome())
-        go(node.right.getOrDo())
+        go(node.right.do())
     }
 
     go(this)

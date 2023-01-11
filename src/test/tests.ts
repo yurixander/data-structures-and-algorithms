@@ -122,7 +122,7 @@ suite(SinglyLinkedList)
     () => expect(
       Hydrate.singlyLinkedList(Size.Large)
         .findNthNode(50)
-        .getOrDo()
+        .do()
         .value
     ).toEqual(51)
   )
@@ -235,23 +235,23 @@ suite(Maybe)
   .test(Maybe.prototype.unwrapOrDefault,
     () => expect(Hydrate.maybe().unwrapOrDefault(testValue)).toEqual(testValue)
   )
-  .test(Maybe.prototype.getOrDo, () => [
-    assertThrows(() => Hydrate.maybe().getOrDo()),
-    expect(Hydrate.maybe(testValue).getOrDo()).toEqual(testValue)
+  .test(Maybe.prototype.do, () => [
+    assertThrows(() => Hydrate.maybe().do()),
+    expect(Hydrate.maybe(testValue).do()).toEqual(testValue)
   ])
   .test(Maybe.prototype.unwrap, () => [
     assertThrows(() => Hydrate.maybe().unwrap("")),
     expect(Hydrate.maybe(testValue).unwrap("")).toEqual(testValue)
   ])
-  .test(Maybe.prototype.map, () => [
-    assert(Hydrate.maybe().map(() => testValue).isNone()),
-    expect(Hydrate.maybe(testValue).map(_ => _ + 1).getOrDo()).toEqual(testValue + 1)
+  .test(Maybe.prototype.transform, () => [
+    assert(Hydrate.maybe().transform(() => testValue).isNone()),
+    expect(Hydrate.maybe(testValue).transform(_ => _ + 1).do()).toEqual(testValue + 1)
   ])
   .run()
 
 suite(State)
   .test("simple", () => {
-    const state = State.get<number>().map(x => x + 1).bind(State.set)
+    const state = State.get<number>().transform(x => x + 1).bind(State.set)
 
     return expect(state.run(0)).toEqual([undefined, 1])
   })

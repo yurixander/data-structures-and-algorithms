@@ -1,5 +1,5 @@
 import {unimplemented} from "../util.js"
-import {IO, printLn} from "./io.js"
+import {IO, log} from "./io.js"
 import {Monad} from "./monad.js"
 
 export class State<S, A> implements Monad<A> {
@@ -16,13 +16,13 @@ export class State<S, A> implements Monad<A> {
   }
 
   static modify<S>(f: (state: S) => S): State<S, void> {
-    return State.get<S>().map(f).bind(State.set)
+    return State.get<S>().transform(f).bind(State.set)
   }
 
   static sequence<S, A>(...states: State<S, A>[]): State<S, A[]> {
     return states.reduce(
       (acc, state) =>
-        acc.bind(values => state.map(value => [...values, value])),
+        acc.bind(values => state.transform(value => [...values, value])),
       State.lift<S, A[]>([])
     )
   }
@@ -33,7 +33,7 @@ export class State<S, A> implements Monad<A> {
     this.run = runner
   }
 
-  map<B>(f: (value: A) => B): State<S, B> {
+  transform<B>(f: (value: A) => B): State<S, B> {
     return new State(state => {
       const [value, s1] = this.run(state)
 
@@ -49,7 +49,7 @@ export class State<S, A> implements Monad<A> {
     })
   }
 
-  getOrDo(): A {
+  do(): A {
     // TODO: Fix error.
     unimplemented()
     // return this.runState(undefined)[0]
@@ -58,12 +58,12 @@ export class State<S, A> implements Monad<A> {
 
 function usageExample(): IO {
   const incrementState = () =>
-    State.get<number>().map(x => x + 1).bind(State.set)
+    State.get<number>().transform(x => x + 1).bind(State.set)
 
   const result = incrementState()
     .bind(incrementState)
     .bind(incrementState)
     .run(0)
 
-  return printLn(result.toString())
+  return log(result.toString())
 }

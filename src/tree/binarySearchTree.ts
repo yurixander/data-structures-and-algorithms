@@ -19,7 +19,7 @@ export class BinarySearchTree<T> extends BinaryTree<T> {
       if (nodeOpt.isNone())
         return Maybe.nothing()
 
-      const node = nodeOpt.getOrDo()
+      const node = nodeOpt.do()
 
       if (node.value === value)
         return nodeOpt

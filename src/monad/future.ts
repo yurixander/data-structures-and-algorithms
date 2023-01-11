@@ -22,7 +22,7 @@ export class Future<T> implements Monad<T> {
     this.callback = callback
   }
 
-  map<U>(f: (value: T) => U): Future<U> {
+  transform<U>(f: (value: T) => U): Future<U> {
     return Future.lift((resolve, reject) =>
       this.callback(value => resolve(f(value)), reject))
   }
@@ -39,9 +39,5 @@ export class Future<T> implements Monad<T> {
 
   then(onFulfilled: (value: T) => void, onRejected: (error: Error) => void): void {
     this.callback(onFulfilled, onRejected)
-  }
-
-  getOrDo(): T {
-    unimplemented()
   }
 }

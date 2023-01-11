@@ -81,7 +81,7 @@ export class Heap<T> {
 
     // REVISE: Provide selector, and we end up with only one heap implementation.
     // REVIEW: How do we know that there is a value at `index` every iteration?
-    while (this.hasParent(index) && this.getParent(index).getOrDo() > this.nodes[index]) {
+    while (this.hasParent(index) && this.getParent(index).do() > this.nodes[index]) {
       this.swap(Heap.getParentIndex(index), index)
       index = Heap.getParentIndex(index)
     }
@@ -95,11 +95,11 @@ export class Heap<T> {
     // of a complete binary tree.
     while (this.hasLeftChild(index)) {
       const rightChildOpt = this.getRightChild(index)
-      const leftChild = this.getLeftChild(index).getOrDo()
+      const leftChild = this.getLeftChild(index).do()
       let smallerChildIndex = Heap.getLeftChildIndex(index)
 
       // REVISE: Provide selector, and we end up with only one heap implementation.
-      if (rightChildOpt.isSome() && rightChildOpt.getOrDo() < leftChild)
+      if (rightChildOpt.isSome() && rightChildOpt.do() < leftChild)
         smallerChildIndex = Heap.getRightChildIndex(index)
 
       if (this.nodes[index] < this.nodes[smallerChildIndex])

@@ -20,7 +20,7 @@ export class SinglyLinkedList<T> implements ForwardIterable<SinglyLinkedList<T>>
   }
 
   iter(): ForwardIterator<SinglyLinkedList<T>> {
-    return new ForwardIterator(this)
+    return ForwardIterator.lift(this)
   }
 
   any(predicate: (value: T) => boolean): boolean {
@@ -45,7 +45,7 @@ export class SinglyLinkedList<T> implements ForwardIterable<SinglyLinkedList<T>>
     let newHead: SinglyLinkedList<T>
 
     while (bufferOpt.isSome()) {
-      const buffer = bufferOpt.getOrDo()
+      const buffer = bufferOpt.do()
       const next = buffer.next;
 
       [buffer.next, bufferOpt] = [previous, next]
@@ -107,8 +107,8 @@ export class SinglyLinkedList<T> implements ForwardIterable<SinglyLinkedList<T>>
     let buffer: Maybe<SinglyLinkedList<T>> = Maybe.just(this)
 
     while (buffer.isSome()) {
-      list.push(buffer.getOrDo())
-      buffer = buffer.getOrDo().next
+      list.push(buffer.do())
+      buffer = buffer.do().next
     }
 
     // This error is a fail-safe, it should be unreachable.

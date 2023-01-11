@@ -1,4 +1,6 @@
+import {log} from "./monad/io.js"
 import {Maybe} from "./monad/maybe.js"
+import {Functor} from "./monad/monad.js"
 
 export type Pair<A, B> = [first: A, second: B]
 
@@ -149,8 +151,16 @@ export function range(from: number, to: number): number[] {
   return result
 }
 
-export function map2<A, B, C>(a: A, b: B, callback: (a: A, b: B) => C): C {
+export function map2<A, B, TResult>(
+  a: A,
+  b: B,
+  callback: (a: A, b: B) => TResult
+): TResult {
   return callback(a, b)
+}
+
+export function transform2<T>(a: T, b: T, f: UnaryOperation<T>): [T, T] {
+  return map2(a, b, (a, b) => [f(a), f(b)])
 }
 
 export function compose(...functions: Function[]): Function {
@@ -217,4 +227,15 @@ export function unsafeAssert(
 
 export function isProperNumber(number: number): boolean {
   return !isNaN(number) && isFinite(number)
+}
+
+export function loop<T = void>(condition: () => boolean, body: () => T): T[] {
+  const go = (result: T[]): T[] => {
+    if (!condition())
+      return result
+
+    return go([...result, body()])
+  }
+
+  return go([])
 }

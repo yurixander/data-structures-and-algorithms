@@ -14,7 +14,7 @@ export class DoublyLinkedList<T> extends SinglyLinkedList<T> {
     let current: DoublyLinkedList<T> = this
 
     while (current.previous.isSome())
-      current = current.previous.getOrDo()
+      current = current.previous.do()
 
     return current
   }
