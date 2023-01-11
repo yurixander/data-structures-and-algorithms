@@ -24,6 +24,20 @@ export class ForwardIterator<T> implements Iterable<T>, EndoFunctor<T>, Foldable
     this.predicate = predicate
   }
 
+  // REVISE: This suffers from possible stack overflow, although unlikely. This is because closures keep getting stacked on top of each other when the new instance is created.
+  private joinPredicateWith(predicate: IteratorPredicate<T>): IteratorPredicate<T> {
+    return value => {
+      if (this.predicate)
+        this.predicate(value)
+
+      return predicate(value)
+    }
+  }
+
+  private transformTo(predicate: IteratorPredicate<T>): ForwardIterator<T> {
+    return new ForwardIterator(this.iterable, this.joinPredicateWith(predicate))
+  }
+
   [Symbol.iterator](): Iterator<T> {
     return this.iterable[Symbol.iterator]()
   }
@@ -105,10 +119,6 @@ export class ForwardIterator<T> implements Iterable<T>, EndoFunctor<T>, Foldable
 
       return true
     })
-
-    ForwardIterator.lift([0])
-      .zip(ForwardIterator.lift(["a"]))
-      .forEach(pair => console.log(pair[0], pair[1]))
 
     return result
   }
@@ -198,10 +208,7 @@ export class ForwardIterator<T> implements Iterable<T>, EndoFunctor<T>, Foldable
    * @example values.filter(value => value >= 0) // Remove all negative values.
    */
   filter(predicate: CallbackWithParam<T, boolean>): ForwardIterator<T> {
-    // REVIEW: Even though the predicate is a callback, it is not lazy? Since we're still iterating over the entire iterator?
-    return new ForwardIterator(this.iterable, (value: T) => {
-      return predicate(value) ? value : undefined
-    })
+    return this.transformTo(value => predicate(value) ? value : undefined)
   }
 
   zip<U>(other: ForwardIterator<U>): ForwardIterator<[T, U]> {
@@ -223,7 +230,7 @@ export class ForwardIterator<T> implements Iterable<T>, EndoFunctor<T>, Foldable
 
   take(amount: number): ForwardIterator<T> {
     // REVISE: This is wrong.
-    return new ForwardIterator<T>(this.iterable, (value: T) => {
+    return this.transformTo(value => {
       if (amount === 0)
         return undefined
 
@@ -261,8 +268,15 @@ export class ForwardIterator<T> implements Iterable<T>, EndoFunctor<T>, Foldable
   }
 
   skip(amount: number): ForwardIterator<T> {
-    // TODO: Implement.
-    unimplemented()
+    return this.transformTo(value => {
+      // REVISE: Re-implement without for loop (since it uses mutation).
+      for (let i = 0; i < amount; i++)
+        if (this.next().done)
+          return undefined
+
+      // REVIEW: Is this correct? Return `value`? This was made up.
+      return value
+    })
   }
 
   // enumerate(): ForwardIterator<[number, T]> {

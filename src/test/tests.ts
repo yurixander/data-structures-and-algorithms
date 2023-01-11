@@ -152,6 +152,7 @@ suite(SinglyLinkedList)
       .toBeArrayOfLength(Size.One + 1)
   )
   .run()
+  .forEach(io => io.do())
 
 // suite({Util})
 //   .test(
@@ -177,6 +178,7 @@ suite(SinglyLinkedList)
 
 suite(DoublyLinkedList)
   .run()
+  .forEach(io => io.do())
 
 suite(Matrix)
   // BUG: Throwing.
@@ -192,6 +194,7 @@ suite(Matrix)
 
 suite(PriorityQueue)
   .run()
+  .forEach(io => io.do())
 
 suite(Stream)
   .test(
@@ -199,15 +202,19 @@ suite(Stream)
     () => expect(Stream.fibonacci.take(5).toArrayImperative()).toEqual([0, 1, 1, 2, 3])
   )
   .run()
+  .forEach(io => io.do())
 
 suite(Graph)
   .run()
+  .forEach(io => io.do())
 
 suite(BinaryTree)
   .run()
+  .forEach(io => io.do())
 
 suite(Heap)
   .run()
+  .forEach(io => io.do())
 
 suite(Either)
   .test(
@@ -218,6 +225,7 @@ suite(Either)
     ]
   )
   .run()
+  .forEach(io => io.do())
 
 suite(Maybe)
   .test(
@@ -248,6 +256,7 @@ suite(Maybe)
     expect(Hydrate.maybe(testValue).transform(_ => _ + 1).do()).toEqual(testValue + 1)
   ])
   .run()
+  .forEach(io => io.do())
 
 suite(State)
   .test("simple", () => {
@@ -262,3 +271,4 @@ suite(State)
     return expect(state.run(0)).toEqual([[], 3])
   })
   .run()
+  .forEach(io => io.do())

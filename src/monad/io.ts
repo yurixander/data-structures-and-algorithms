@@ -35,8 +35,6 @@ export class IO<T = void> implements Monad<T> {
   }
 }
 
-log("hi").do()
-
 export function log(...messages: string[]): IO {
   return IO.lift(() => console.log(...messages))
 }
@@ -53,16 +51,4 @@ export function readLn(query: string): IO<Future<string>> {
         .question(query, answer => resolve(answer))
     )
   )
-}
-
-function main() {
-  const curryPrintLn = (text: string) =>
-    () => log(text)
-
-  log("hello world")
-    .bind(curryPrintLn("hi"))
-    .bind(curryPrintLn("foo"))
-    .bind(curryPrintLn("how are you doing today?"))
-    .bind(() => readLn("write your name:"))
-    .do()
 }
